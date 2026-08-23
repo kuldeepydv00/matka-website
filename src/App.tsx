@@ -45,12 +45,13 @@ export default function App() {
   const [otpInput, setOtpInput] = useState('');
   const [registerName, setRegisterName] = useState('');
   const [registerPassword, setRegisterPassword] = useState('123456');
+  const [referralCodeInput, setReferralCodeInput] = useState('');
   const [isExistingUser, setIsExistingUser] = useState(false);
-  const [existingUserData, setExistingUserData] = useState<{ name: string; mobile: string; balance: number } | null>(null);
+  const [existingUserData, setExistingUserData] = useState<{ name: string; mobile: string; balance: number; referral_code?: string } | null>(null);
   const [authError, setAuthError] = useState('');
 
   // Player User Session
-  const [user, setUser] = useState<{ name: string; mobile: string; balance: number } | null>(null);
+  const [user, setUser] = useState<{ name: string; mobile: string; balance: number; referral_code?: string } | null>(null);
 
   // App Data States
   const [declaredResults, setDeclaredResults] = useState<Record<string, number>>({});
@@ -389,10 +390,12 @@ export default function App() {
       return;
     }
     const cleanMobile = mobileNumber.replace(/[^0-9]/g, '');
+    const ownRef = `REF${cleanMobile}`;
     const newUser = {
       name: registerName.trim(),
       mobile: cleanMobile,
-      balance: 0.00
+      balance: 0.00,
+      referral_code: ownRef
     };
 
     try {
@@ -402,7 +405,8 @@ export default function App() {
         body: JSON.stringify({
           name: registerName.trim(),
           mobile: cleanMobile,
-          password: registerPassword || '123456'
+          password: registerPassword || '123456',
+          referral_code: referralCodeInput.trim()
         })
       });
     } catch (e) {}
@@ -929,6 +933,17 @@ export default function App() {
                       value={registerName}
                       onChange={(e) => setRegisterName(e.target.value)}
                       className="w-full bg-[#1E293B] border border-[#334155] rounded-xl p-3 text-sm text-white focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Referral Code (Optional)</label>
+                    <input
+                      type="text"
+                      placeholder="Enter referral code (e.g. REF1472580369)"
+                      value={referralCodeInput}
+                      onChange={(e) => setReferralCodeInput(e.target.value.toUpperCase())}
+                      className="w-full bg-[#1E293B] border border-[#334155] rounded-xl p-3 text-sm text-[#FFE485] font-mono focus:outline-none uppercase"
                     />
                   </div>
 
@@ -1877,16 +1892,19 @@ export default function App() {
 
               <button 
                 onClick={() => {
+                  const refCode = user?.referral_code || (user?.mobile ? `REF${user.mobile.slice(-10)}` : 'REF1472580369');
+                  const shareMsg = `Play 95X Matka & Win 95X! 👑\nUse my Referral Code: ${refCode} to get ₹50 bonus!\nPlay online: https://matka-website.vercel.app`;
                   if (navigator.share) {
-                    navigator.share({ title: '95X Matka', text: 'Play Online Matka & Win 95X!', url: window.location.origin }).catch(() => {});
+                    navigator.share({ title: '95X Matka Referral', text: shareMsg, url: 'https://matka-website.vercel.app' }).catch(() => {});
                   } else {
-                    alert('Share link copied to clipboard!');
+                    navigator.clipboard.writeText(shareMsg);
+                    alert(`✅ Referral Code ${refCode} & Link copied to clipboard! Share it with your friends to earn ₹50 bonus!`);
                   }
                 }}
-                className="flex flex-col items-center gap-1 text-[10px] font-black uppercase tracking-wider text-gray-400 hover:text-gray-200 transition-all"
+                className="flex flex-col items-center gap-1 text-[10px] font-black uppercase tracking-wider text-[#F3D079] hover:text-white transition-all"
               >
                 <span className="text-lg">🔀</span>
-                <span>SHARE</span>
+                <span>SHARE & EARN</span>
               </button>
             </div>
           </div>
