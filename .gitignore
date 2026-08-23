@@ -1,5 +1,6 @@
+.vercel
 node_modules
 dist
-.vercel
 .DS_Store
 *.tsbuildinfo
+
