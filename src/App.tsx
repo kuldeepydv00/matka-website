@@ -1065,6 +1065,16 @@ export default function App() {
 
                     <div className="my-2 border-t border-gray-800/80" />
 
+                    <button
+                      onClick={() => {
+                        setShowReferralModal(true);
+                        setIsSideMenuOpen(false);
+                      }}
+                      className="w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-xs font-bold text-[#FFE485] hover:bg-[#F3D079]/10 transition-all text-left"
+                    >
+                      <span className="text-base">🎁</span> Refer & Earn (₹50 Bonus)
+                    </button>
+
                     <a
                       href="https://wa.me/917027709695"
                       target="_blank"
@@ -1487,17 +1497,11 @@ export default function App() {
               </a>
 
               <button 
-                onClick={() => {
-                  if (navigator.share) {
-                    navigator.share({ title: '95X Matka', text: 'Play Online Matka & Win 95X!', url: window.location.origin }).catch(() => {});
-                  } else {
-                    alert('Share link copied to clipboard!');
-                  }
-                }}
-                className="flex flex-col items-center gap-1 text-[10px] font-black uppercase tracking-wider text-gray-400 hover:text-gray-200 transition-all"
+                onClick={() => setShowReferralModal(true)}
+                className="flex flex-col items-center gap-1 text-[10px] font-black uppercase tracking-wider text-[#F3D079] hover:text-white transition-all"
               >
                 <span className="text-lg">🔀</span>
-                <span>SHARE</span>
+                <span>SHARE & EARN</span>
               </button>
             </div>
           </div>
