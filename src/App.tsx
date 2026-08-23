@@ -311,7 +311,7 @@ export default function App() {
     return () => clearInterval(timer);
   }, [user?.mobile]);
 
-  // Auth Handler 1: Phone Submit
+  // Auth Handler 1: Phone Submit (Checks if number is registered)
   const handlePhoneSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const cleanMobile = mobileNumber.replace(/[^0-9]/g, '');
@@ -324,15 +324,15 @@ export default function App() {
     setExistingUserData(null);
 
     try {
-      const res = await fetchApi(`/api/user/profile?mobile=${cleanMobile}`);
+      const res = await fetchApi(`/api/user/check?mobile=${cleanMobile}`);
       if (res.ok) {
         const data = await res.json();
-        if (data && (data.name !== 'User' || data.balance > 0 || data.mobile === cleanMobile)) {
+        if (data && data.exists && data.user) {
           setIsExistingUser(true);
           setExistingUserData({
-            name: data.name || `User ${cleanMobile.slice(-4)}`,
+            name: data.user.name || `User ${cleanMobile.slice(-4)}`,
             mobile: cleanMobile,
-            balance: data.balance || 0
+            balance: data.user.balance || 0
           });
         }
       }
@@ -340,35 +340,48 @@ export default function App() {
     setAuthStep('otp');
   };
 
-  // Auth Handler 2: OTP Submit (100% Seamless Auto-Login)
+  // Auth Handler 2: OTP Submit (Redirects to main page if registered; asks for name if new user)
   const handleOtpSubmit = async (val: string) => {
     if (val.length === 4) {
       const cleanMobile = mobileNumber.replace(/[^0-9]/g, '');
 
-      let userProfile = {
-        name: existingUserData?.name || `User ${cleanMobile.slice(-4)}`,
-        mobile: cleanMobile,
-        balance: existingUserData?.balance || 0.00
-      };
+      let registeredProfile = existingUserData;
 
-      try {
-        const res = await fetchApi(`/api/user/profile?mobile=${cleanMobile}`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data) {
-            if (data.name && data.name !== 'User') userProfile.name = data.name;
-            if (data.balance !== undefined) userProfile.balance = data.balance;
+      // Double check live with backend if registered
+      if (!registeredProfile) {
+        try {
+          const res = await fetchApi(`/api/user/check?mobile=${cleanMobile}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data && data.exists && data.user) {
+              registeredProfile = {
+                name: data.user.name || `User ${cleanMobile.slice(-4)}`,
+                mobile: cleanMobile,
+                balance: data.user.balance || 0
+              };
+            }
           }
-        }
-      } catch (e) {}
+        } catch (e) {}
+      }
 
-      setUser(userProfile);
-      localStorage.setItem('95x_web_user', JSON.stringify(userProfile));
-      setView('webapp');
+      if (registeredProfile || isExistingUser) {
+        // ALREADY REGISTERED USER -> Redirect directly to Main WebApp Page!
+        const loggedInUser = registeredProfile || {
+          name: `User ${cleanMobile.slice(-4)}`,
+          mobile: cleanMobile,
+          balance: 0.00
+        };
+        setUser(loggedInUser);
+        localStorage.setItem('95x_web_user', JSON.stringify(loggedInUser));
+        setView('webapp');
+      } else {
+        // NEW USER -> Ask for Full Name!
+        setAuthStep('register');
+      }
     }
   };
 
-  // Auth Handler 3: Account Registration
+  // Auth Handler 3: New Account Registration
   const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!registerName.trim()) {
@@ -839,24 +852,6 @@ export default function App() {
                 </div>
                 <h2 className="text-2xl font-black text-[#FFE485]">95X MATKA</h2>
                 <p className="text-xs text-gray-400 mt-1">आपका भरोसा, हमारी पहचान</p>
-
-                {/* Login / Register Toggle Tabs */}
-                <div className="flex bg-[#1E293B] p-1 rounded-xl mt-4">
-                  <button
-                    type="button"
-                    onClick={() => { setAuthStep('phone'); setAuthError(''); }}
-                    className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${authStep !== 'register' ? 'bg-[#00C853] text-white shadow-md' : 'text-gray-400'}`}
-                  >
-                    LOGIN (MOBILE + OTP)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => { setAuthStep('register'); setAuthError(''); }}
-                    className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${authStep === 'register' ? 'bg-[#00C853] text-white shadow-md' : 'text-gray-400'}`}
-                  >
-                    NEW REGISTRATION
-                  </button>
-                </div>
               </div>
 
               {authError && (
