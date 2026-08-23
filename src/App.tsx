@@ -68,9 +68,10 @@ export default function App() {
   const [chartFilter, setChartFilter] = useState<'today' | 'yesterday' | 'custom'>('today');
   const [selectedChartDate, setSelectedChartDate] = useState(new Date().toISOString().split('T')[0]);
   const [dateChartResults, setDateChartResults] = useState<Record<string, string>>({});
-  const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
   const [showRulesModal, setShowRulesModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showReferralModal, setShowReferralModal] = useState(false);
+  const [copiedToast, setCopiedToast] = useState(false);
 
   const formatChartDateDisplay = (dateStr: string) => {
     try {
@@ -1891,16 +1892,7 @@ export default function App() {
               </a>
 
               <button 
-                onClick={() => {
-                  const refCode = user?.referral_code || (user?.mobile ? `REF${user.mobile.slice(-10)}` : 'REF1472580369');
-                  const shareMsg = `Play 95X Matka & Win 95X! 👑\nUse my Referral Code: ${refCode} to get ₹50 bonus!\nPlay online: https://matka-website.vercel.app`;
-                  if (navigator.share) {
-                    navigator.share({ title: '95X Matka Referral', text: shareMsg, url: 'https://matka-website.vercel.app' }).catch(() => {});
-                  } else {
-                    navigator.clipboard.writeText(shareMsg);
-                    alert(`✅ Referral Code ${refCode} & Link copied to clipboard! Share it with your friends to earn ₹50 bonus!`);
-                  }
-                }}
+                onClick={() => setShowReferralModal(true)}
                 className="flex flex-col items-center gap-1 text-[10px] font-black uppercase tracking-wider text-[#F3D079] hover:text-white transition-all"
               >
                 <span className="text-lg">🔀</span>
@@ -2237,6 +2229,75 @@ export default function App() {
                   {isWithdrawSubmitting ? 'PROCESSING...' : 'REQUEST WITHDRAWAL ➔'}
                 </button>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================= */}
+        {/* MODAL 4: REFERRAL & EARN MODAL                           */}
+        {/* ========================================================= */}
+        {showReferralModal && (
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+            <div className="bg-gradient-to-br from-[#1E293B] to-[#0F172A] border-2 border-[#F3D079] rounded-3xl w-full max-w-sm p-6 shadow-2xl relative text-center">
+              <button 
+                onClick={() => setShowReferralModal(false)}
+                className="absolute top-4 right-4 text-gray-400 hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <div className="w-16 h-16 bg-gradient-to-tr from-[#F3D079] to-[#FFF1B8] rounded-2xl mx-auto flex items-center justify-center text-3xl shadow-lg border border-amber-300/40 mb-3">
+                🎁
+              </div>
+
+              <h3 className="text-xl font-black text-[#FFE485] tracking-wide mb-1">
+                REFER & EARN ₹50
+              </h3>
+              <p className="text-xs text-gray-300 mb-4">
+                Share your referral code with friends and earn <strong className="text-[#00C853]">₹50 Instant Bonus</strong> + <strong className="text-[#F3D079]">4% Lifetime Commission</strong> on every bet!
+              </p>
+
+              {/* Unique Referral Code Badge */}
+              {(() => {
+                const userRefCode = user?.referral_code || (user?.mobile ? `REF${user.mobile.slice(-10)}` : 'REF1472580369');
+                const shareText = `Play 95X Matka & Win 95X! 👑\nUse my Referral Code: ${userRefCode} to get ₹50 bonus balance!\nPlay online: https://matka-website.vercel.app`;
+                const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
+
+                return (
+                  <div className="space-y-3">
+                    <div className="bg-[#090D16] border border-amber-400/40 rounded-2xl p-4 shadow-inner">
+                      <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">YOUR UNIQUE REFERRAL CODE</div>
+                      <div className="text-2xl font-black font-mono text-[#FFE485] tracking-wider select-all">
+                        {userRefCode}
+                      </div>
+                    </div>
+
+                    {/* Action 1: Copy Code & Link */}
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(shareText);
+                        setCopiedToast(true);
+                        setTimeout(() => setCopiedToast(false), 2500);
+                      }}
+                      className="w-full bg-gradient-to-r from-[#1E293B] to-[#334155] border border-amber-400/50 hover:bg-gray-700 text-white font-bold py-3.5 px-4 rounded-xl flex justify-center items-center gap-2 text-xs uppercase tracking-wider shadow-md transition-all"
+                    >
+                      <span>📋</span>
+                      <span>{copiedToast ? '✅ COPIED TO CLIPBOARD!' : 'COPY REFERRAL CODE & LINK'}</span>
+                    </button>
+
+                    {/* Action 2: Share directly to WhatsApp */}
+                    <a
+                      href={whatsappUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="w-full bg-[#00C853] hover:bg-[#00B248] text-white font-black py-3.5 px-4 rounded-xl flex justify-center items-center gap-2 text-xs uppercase tracking-wider shadow-lg transition-all"
+                    >
+                      <span className="text-base">💬</span>
+                      <span>SHARE ON WHATSAPP</span>
+                    </a>
+                  </div>
+                );
+              })()}
             </div>
           </div>
         )}
