@@ -1527,6 +1527,7 @@ export default function App() {
                     <span>{formatChartDateDisplay(selectedChartDate)}</span>
                     <input
                       type="date"
+                      min="2025-01-01"
                       value={selectedChartDate}
                       onChange={(e) => {
                         if (e.target.value) {
