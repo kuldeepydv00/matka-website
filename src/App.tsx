@@ -278,7 +278,7 @@ export default function App() {
     }
   };
 
-  const [activeWebTab, setActiveWebTab] = useState<'home' | 'mybets' | 'charts'>('home');
+  const [activeWebTab, setActiveWebTab] = useState<'home' | 'mybets' | 'charts' | 'referral'>('home');
   const [myBetsList, setMyBetsList] = useState<any[]>([]);
 
   // Load saved session on launch & immediately sync live profile
@@ -1493,6 +1493,147 @@ export default function App() {
               </div>
             )}
 
+            {/* TAB CONTENT: REFERRAL (Matches in-app tab layout!) */}
+            {activeWebTab === 'referral' && (
+              <div className="px-4 space-y-4">
+                <h3 className="text-base font-bold text-white text-center mb-3">Refer & Earn Rewards</h3>
+
+                {/* CARD 1: TOTAL COMMISSION */}
+                <div className="bg-[#1E293B] rounded-2xl shadow-lg border border-[#334155] overflow-hidden">
+                  <div className="bg-[#162238] px-4 py-2.5 flex justify-between items-center text-white">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm">🎟️</span>
+                      <span className="text-xs font-black tracking-wider uppercase">TOTAL COMMISSION</span>
+                    </div>
+                    <button 
+                      onClick={fetchWebsiteReferralDetails}
+                      className="text-xs hover:rotate-180 transition-transform p-1"
+                    >
+                      🔄
+                    </button>
+                  </div>
+                  <div className="p-4">
+                    <div className="bg-[#0F172A] border-2 border-[#F3D079] rounded-2xl py-4 text-center">
+                      <span className="text-2xl font-mono font-black text-[#F3D079]">
+                        ₹{referralDetails.totalCommission || 0}/-
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* CARD 2: YOUR REFERRAL CODE */}
+                <div className="bg-[#1E293B] rounded-2xl shadow-lg border border-[#334155] overflow-hidden">
+                  <div className="bg-[#00873E] px-4 py-2.5 flex items-center gap-2 text-white">
+                    <span className="text-sm">🎁</span>
+                    <span className="text-xs font-black tracking-wider uppercase">YOUR REFERRAL CODE</span>
+                  </div>
+                  <div className="p-4 text-center">
+                    {(() => {
+                      const userRefCode = referralDetails.referral_code || user?.referral_code || (user?.mobile ? `REF${user.mobile.slice(-10)}` : 'REF1472580369');
+                      const shareText = `Play 95X Matka & Win 95X! 👑\nUse my Referral Code: ${userRefCode} to get bonus balance!\nPlay online: https://matka-website.vercel.app`;
+                      const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
+
+                      return (
+                        <div className="space-y-4">
+                          <div className="bg-[#0F172A] border-2 border-[#F3D079] rounded-2xl py-3.5 px-3">
+                            <div className="text-xl font-mono font-black text-[#F3D079] tracking-[0.2em] select-all whitespace-nowrap overflow-x-auto">
+                              {userRefCode}
+                            </div>
+                          </div>
+
+                          <div className="text-xs font-semibold text-[#94A3B8]">
+                            https://matka-website.vercel.app/
+                          </div>
+
+                          {/* Side-by-Side Action Buttons */}
+                          <div className="grid grid-cols-2 gap-3">
+                            <button
+                              onClick={() => {
+                                navigator.clipboard.writeText(shareText);
+                                setCopiedToast(true);
+                                setTimeout(() => setCopiedToast(false), 2500);
+                              }}
+                              className="bg-[#00873E] hover:bg-[#007033] text-white font-bold py-2.5 px-3 rounded-xl flex justify-center items-center gap-2 text-xs uppercase tracking-wider shadow-sm transition-all"
+                            >
+                              <span>📋</span>
+                              <span>{copiedToast ? 'COPIED!' : 'Copy Code'}</span>
+                            </button>
+
+                            <a
+                              href={whatsappUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="bg-[#F59E0B] hover:bg-[#D97706] text-[#0F172A] font-black py-2.5 px-3 rounded-xl flex justify-center items-center gap-2 text-xs uppercase tracking-wider shadow-sm transition-all"
+                            >
+                              <span>🔀</span>
+                              <span>Share</span>
+                            </a>
+                          </div>
+
+                          {/* Step Process Indicator */}
+                          <div className="grid grid-cols-3 gap-2 pt-3 border-t border-[#334155]">
+                            <div className="flex flex-col items-center">
+                              <div className="w-7 h-7 rounded-full bg-[#0F172A] border border-[#F3D079] flex items-center justify-center font-black text-xs text-[#F3D079] mb-1">1</div>
+                              <span className="text-[10px] font-medium text-[#94A3B8]">Share your code</span>
+                            </div>
+                            <div className="flex flex-col items-center">
+                              <div className="w-7 h-7 rounded-full bg-[#0F172A] border border-[#F3D079] flex items-center justify-center font-black text-xs text-[#F3D079] mb-1">2</div>
+                              <span className="text-[10px] font-medium text-[#94A3B8]">They sign up</span>
+                            </div>
+                            <div className="flex flex-col items-center">
+                              <div className="w-7 h-7 rounded-full bg-[#0F172A] border border-[#F3D079] flex items-center justify-center font-black text-xs text-[#F3D079] mb-1">3</div>
+                              <span className="text-[10px] font-medium text-[#94A3B8]">You earn</span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                </div>
+
+                {/* CARD 3: TOTAL REFERRALS */}
+                <div className="bg-[#1E293B] rounded-2xl shadow-lg border border-[#334155] overflow-hidden">
+                  <div className="bg-[#162238] px-4 py-2.5 flex justify-between items-center text-white">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm">👥</span>
+                      <span className="text-xs font-black tracking-wider uppercase">TOTAL REFERRALS</span>
+                    </div>
+                    <div className="bg-[#0F172A] border border-[#F3D079] text-[#F3D079] px-2.5 py-0.5 rounded-full text-xs font-black flex items-center gap-1">
+                      <span>👤</span>
+                      <span>{referralDetails.referralsCount || 0}</span>
+                    </div>
+                  </div>
+
+                  <div className="p-4 text-center">
+                    {referralDetails.referredUsers.length === 0 ? (
+                      <div className="py-4">
+                        <div className="text-4xl mb-2">👥</div>
+                        <p className="text-sm font-bold text-[#94A3B8]">No referrals yet</p>
+                        <p className="text-[11px] text-[#64748B] mt-1">Share your code above to start earning bonus & lifetime 4% bet commissions!</p>
+                      </div>
+                    ) : (
+                      <div className="text-left space-y-2.5">
+                        {referralDetails.referredUsers.map((ref, idx) => (
+                          <div key={idx} className="p-3.5 bg-[#0F172A] rounded-xl border border-[#334155] flex justify-between items-center text-xs">
+                            <div>
+                              <p className="font-bold text-white text-sm">{ref.name}</p>
+                              <p className="text-[#94A3B8] font-mono text-[11px] mt-0.5">{ref.mobile} • {ref.date}</p>
+                              <p className="text-[11px] text-[#F3D079] font-semibold mt-1">
+                                Bonus: ₹{ref.bonus} • 4% Bet Comm: ₹{ref.betCommission.toFixed(2)}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <span className="font-mono font-black text-[#00C853] text-base">+₹{ref.totalEarned.toFixed(2)}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Bottom 5-Icon Navigation Bar (100% Copy of media_1787416911507.png!) */}
             <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-[#0F172A] border-t border-gray-800/90 py-2 px-3 flex justify-around items-center z-50 shadow-2xl backdrop-blur-md">
               <button 
@@ -1545,11 +1686,16 @@ export default function App() {
               </a>
 
               <button 
-                onClick={() => setShowReferralModal(true)}
-                className="flex flex-col items-center gap-1 text-[10px] font-black uppercase tracking-wider text-[#F3D079] hover:text-white transition-all"
+                onClick={() => {
+                  setSelectedGameForBetting(null);
+                  setActiveWebTab('referral');
+                }}
+                className={`flex flex-col items-center gap-1 text-[10px] font-black uppercase tracking-wider transition-all ${
+                  activeWebTab === 'referral' ? 'text-[#F3D079]' : 'text-gray-400 hover:text-gray-200'
+                }`}
               >
-                <span className="text-lg">🔀</span>
-                <span>SHARE & EARN</span>
+                <span className="text-lg">🎁</span>
+                <span>REFER</span>
               </button>
             </div>
           </div>
