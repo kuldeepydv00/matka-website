@@ -1658,34 +1658,6 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* CARD 2.5: APPLY REFERRAL CODE FOR EXISTING USERS */}
-                <div className="bg-[#1E293B] rounded-2xl shadow-lg border border-[#334155] p-4 text-center space-y-3">
-                  <div className="flex items-center justify-center gap-2 text-xs font-black text-[#F3D079] uppercase tracking-wider">
-                    <span>🎁</span>
-                    <span>HAVE A REFERRAL CODE? APPLY HERE</span>
-                  </div>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      placeholder="Enter Referral Code (e.g. REF1111111111)"
-                      value={applyRefInput}
-                      onChange={(e) => setApplyRefInput(e.target.value.toUpperCase())}
-                      className="flex-1 bg-[#0F172A] border border-[#334155] rounded-xl px-3 py-2 text-xs text-[#F3D079] font-mono uppercase focus:outline-none"
-                    />
-                    <button
-                      onClick={handleApplyReferralCode}
-                      className="bg-[#00C853] hover:bg-[#00B248] text-white font-bold px-4 py-2 rounded-xl text-xs uppercase tracking-wider shadow-md transition-all shrink-0"
-                    >
-                      APPLY
-                    </button>
-                  </div>
-                  {applyRefStatus && (
-                    <p className={`text-xs font-bold ${applyRefStatus.includes('success') || applyRefStatus.includes('🎉') ? 'text-[#00C853]' : 'text-red-400'}`}>
-                      {applyRefStatus}
-                    </p>
-                  )}
-                </div>
-
                 {/* CARD 3: TOTAL REFERRALS */}
                 <div className="bg-[#1E293B] rounded-2xl shadow-lg border border-[#334155] overflow-hidden">
                   <div className="bg-[#162238] px-4 py-2.5 flex justify-between items-center text-white">
