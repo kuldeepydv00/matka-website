@@ -74,6 +74,53 @@ export default function App() {
   const [showReferralModal, setShowReferralModal] = useState(false);
   const [copiedToast, setCopiedToast] = useState(false);
 
+  // Referral Details State
+  const [referralDetails, setReferralDetails] = useState<{
+    referral_code: string;
+    referralsCount: number;
+    totalCommission: number;
+    referredUsers: Array<{
+      id: string;
+      name: string;
+      mobile: string;
+      date: string;
+      bonus: number;
+      betCommission: number;
+      totalEarned: number;
+    }>;
+  }>({
+    referral_code: '',
+    referralsCount: 0,
+    totalCommission: 0,
+    referredUsers: []
+  });
+
+  const fetchWebsiteReferralDetails = async () => {
+    if (!user?.mobile) return;
+    const cleanMobile = user.mobile.replace(/[^0-9]/g, '').slice(-10);
+    for (const base of ['https://matka-r6mz.onrender.com', 'http://localhost:5001']) {
+      try {
+        const res = await fetch(`${base}/api/user/referral-details?mobile=${cleanMobile}`);
+        if (res.ok) {
+          const data = await res.json();
+          setReferralDetails({
+            referral_code: data.referral_code || `REF${cleanMobile}`,
+            referralsCount: data.referralsCount || 0,
+            totalCommission: data.totalCommission || 0,
+            referredUsers: data.referredUsers || []
+          });
+          break;
+        }
+      } catch (e) {}
+    }
+  };
+
+  useEffect(() => {
+    if (showReferralModal && user?.mobile) {
+      fetchWebsiteReferralDetails();
+    }
+  }, [showReferralModal, user]);
+
   const formatChartDateDisplay = (dateStr: string) => {
     try {
       const d = new Date(dateStr);
@@ -2281,11 +2328,18 @@ export default function App() {
                     <span className="text-sm">🎟️</span>
                     <span className="text-xs font-black tracking-wider uppercase">TOTAL COMMISSION</span>
                   </div>
-                  <button className="text-xs hover:rotate-180 transition-transform">🔄</button>
+                  <button 
+                    onClick={fetchWebsiteReferralDetails}
+                    className="text-xs hover:rotate-180 transition-transform p-1"
+                  >
+                    🔄
+                  </button>
                 </div>
                 <div className="p-4">
                   <div className="bg-[#0F172A] border-2 border-[#F3D079] rounded-2xl py-4 text-center">
-                    <span className="text-2xl font-mono font-black text-[#F3D079]">₹{(user?.referralsCount || 0) * 50}/-</span>
+                    <span className="text-2xl font-mono font-black text-[#F3D079]">
+                      ₹{referralDetails.totalCommission || 0}/-
+                    </span>
                   </div>
                 </div>
               </div>
@@ -2298,8 +2352,8 @@ export default function App() {
                 </div>
                 <div className="p-4 text-center">
                   {(() => {
-                    const userRefCode = user?.referral_code || (user?.mobile ? `REF${user.mobile.slice(-10)}` : 'REF1472580369');
-                    const shareText = `Play 95X Matka & Win 95X! 👑\nUse my Referral Code: ${userRefCode} to get ₹50 bonus balance!\nPlay online: https://matka-website.vercel.app`;
+                    const userRefCode = referralDetails.referral_code || user?.referral_code || (user?.mobile ? `REF${user.mobile.slice(-10)}` : 'REF1472580369');
+                    const shareText = `Play 95X Matka & Win 95X! 👑\nUse my Referral Code: ${userRefCode} to get bonus balance!\nPlay online: https://matka-website.vercel.app`;
                     const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
 
                     return (
@@ -2369,25 +2423,33 @@ export default function App() {
                   </div>
                   <div className="bg-[#0F172A] border border-[#F3D079] text-[#F3D079] px-2.5 py-0.5 rounded-full text-xs font-black flex items-center gap-1">
                     <span>👤</span>
-                    <span>{user?.referralsCount || 0}</span>
+                    <span>{referralDetails.referralsCount || 0}</span>
                   </div>
                 </div>
 
-                <div className="p-6 text-center">
-                  {(user?.referralsCount || 0) === 0 ? (
+                <div className="p-4 text-center">
+                  {referralDetails.referredUsers.length === 0 ? (
                     <div className="py-4">
                       <div className="text-4xl mb-2">👥</div>
                       <p className="text-sm font-bold text-[#94A3B8]">No referrals yet</p>
+                      <p className="text-[11px] text-[#64748B] mt-1">Share your code above to start earning bonus & lifetime 4% bet commissions!</p>
                     </div>
                   ) : (
-                    <div className="text-left space-y-2">
-                      <div className="p-3 bg-[#0F172A] rounded-xl border border-[#334155] flex justify-between items-center text-xs">
-                        <div>
-                          <p className="font-bold text-white">Invited Friends Total</p>
-                          <p className="text-[#94A3B8]">Active Referred Players</p>
+                    <div className="text-left space-y-2.5">
+                      {referralDetails.referredUsers.map((ref, idx) => (
+                        <div key={idx} className="p-3.5 bg-[#0F172A] rounded-xl border border-[#334155] flex justify-between items-center text-xs">
+                          <div>
+                            <p className="font-bold text-white text-sm">{ref.name}</p>
+                            <p className="text-[#94A3B8] font-mono text-[11px] mt-0.5">{ref.mobile} • {ref.date}</p>
+                            <p className="text-[11px] text-[#F3D079] font-semibold mt-1">
+                              Bonus: ₹{ref.bonus} • 4% Bet Comm: ₹{ref.betCommission.toFixed(2)}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <span className="font-mono font-black text-[#00C853] text-base">+₹{ref.totalEarned.toFixed(2)}</span>
+                          </div>
                         </div>
-                        <span className="font-mono font-bold text-[#F3D079] text-sm">{user?.referralsCount} Players</span>
-                      </div>
+                      ))}
                     </div>
                   )}
                 </div>
