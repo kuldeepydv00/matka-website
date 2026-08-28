@@ -993,20 +993,6 @@ export default function App() {
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Referral Code (Optional)</label>
-                    <div className="flex bg-[#1E293B] border border-[#334155] rounded-xl overflow-hidden">
-                      <span className="px-3.5 py-3 text-sm font-bold text-[#F3D079] border-r border-[#334155] bg-[#0F172A] flex items-center">🎁</span>
-                      <input
-                        type="text"
-                        placeholder="Enter Referral Code (e.g. REF7027709695)"
-                        value={referralCodeInput}
-                        onChange={(e) => setReferralCodeInput(e.target.value.toUpperCase())}
-                        className="w-full bg-transparent p-3 text-sm text-[#F3D079] focus:outline-none font-mono tracking-wider uppercase"
-                      />
-                    </div>
-                  </div>
-
                   <button type="submit" className="w-full bg-[#00C853] hover:bg-[#00B248] text-white font-black py-3.5 rounded-xl shadow-lg text-sm tracking-wider uppercase transition-all">
                     GET OTP ➔
                   </button>
