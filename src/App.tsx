@@ -71,6 +71,7 @@ export default function App() {
   const [dateChartResults, setDateChartResults] = useState<Record<string, string>>({});
   const [showRulesModal, setShowRulesModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showWalletModal, setShowWalletModal] = useState(false);
   const [showReferralModal, setShowReferralModal] = useState(false);
   const [copiedToast, setCopiedToast] = useState(false);
 
@@ -1247,7 +1248,7 @@ export default function App() {
 
               {/* Wallet Balance Box */}
               <button 
-                onClick={() => setShowDepositModal(true)}
+                onClick={() => setShowWalletModal(true)}
                 className="flex items-center gap-1.5 bg-[#00C853] text-white px-3 py-1.5 rounded-xl text-xs font-bold font-mono shadow-md hover:bg-[#00B248]"
               >
                 <span>💵</span>
@@ -2297,6 +2298,113 @@ export default function App() {
               >
                 GOT IT ➔
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL: WALLET SCREEN (Matching Android App!) */}
+        {showWalletModal && (
+          <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
+            <div className="bg-[#0F172A] border border-gray-800 rounded-3xl p-5 w-full max-w-sm shadow-2xl relative animate-in fade-in zoom-in duration-200 text-white max-h-[90vh] overflow-y-auto">
+              
+              {/* Top Bar Header */}
+              <div className="flex justify-between items-center mb-5 pb-3 border-b border-gray-800">
+                <div className="flex items-center gap-2">
+                  <button onClick={() => setShowWalletModal(false)} className="text-xl font-bold text-gray-300 hover:text-white">
+                    ←
+                  </button>
+                  <h3 className="text-lg font-extrabold text-white tracking-wide">Wallet</h3>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={() => {
+                      refreshData();
+                      fetchWebsiteReferralDetails();
+                    }} 
+                    className="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-sm transition-all"
+                    title="Refresh Balance"
+                  >
+                    🔄
+                  </button>
+                  <button
+                    onClick={() => setShowWalletModal(false)}
+                    className="text-gray-400 hover:text-white text-sm font-bold w-7 h-7 rounded-full bg-gray-800 flex items-center justify-center"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+
+              {/* Main Professional Wallet Card */}
+              <div className="bg-gradient-to-b from-[#1E2638] to-[#131924] border border-[#2A364F] rounded-3xl p-6 shadow-xl mb-6 text-center">
+                {/* Big Balance Display */}
+                <h2 className="text-3xl font-black font-mono tracking-tight text-white mb-1">
+                  ₹ {user?.balance ? user.balance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
+                </h2>
+                <p className="text-xs font-semibold text-gray-400 mb-6">Available Balance</p>
+
+                {/* Commission & Bonus Row */}
+                <div className="flex justify-around items-center py-3 border-t border-b border-[#2A364F]/60 mb-6">
+                  {/* Commission */}
+                  <div className="text-center">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">COMMISSION</p>
+                    <p className="text-sm font-black font-mono text-white">₹ {(referralDetails?.totalCommission || 0).toFixed(2)}</p>
+                  </div>
+                  {/* Vertical Divider */}
+                  <div className="w-[1px] h-8 bg-[#2A364F]" />
+                  {/* Bonus */}
+                  <div className="text-center">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">BONUS</p>
+                    <p className="text-sm font-black font-mono text-[#00C853]">₹ 0.00</p>
+                  </div>
+                </div>
+
+                {/* Action Buttons Row */}
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={() => {
+                      setShowWalletModal(false);
+                      setShowWithdrawModal(true);
+                    }}
+                    className="w-full bg-[#EF4444]/10 hover:bg-[#EF4444]/20 border border-[#EF4444]/60 text-[#EF4444] font-bold py-3 px-3 rounded-2xl text-xs uppercase tracking-wider transition-all"
+                  >
+                    WITHDRAW
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowWalletModal(false);
+                      setShowDepositModal(true);
+                    }}
+                    className="w-full bg-gradient-to-r from-[#4F46E5] to-[#3B82F6] hover:opacity-90 text-white font-bold py-3 px-3 rounded-2xl text-xs uppercase tracking-wider shadow-lg shadow-indigo-500/30 transition-all"
+                  >
+                    ADD CASH
+                  </button>
+                </div>
+              </div>
+
+              {/* Recent Transactions Section */}
+              <div>
+                <div className="flex justify-between items-center mb-3">
+                  <h4 className="text-xs font-bold text-white uppercase tracking-wider">Recent Transactions</h4>
+                  <button 
+                    onClick={() => {
+                      setShowWalletModal(false);
+                      setActiveWebTab('mybets');
+                    }}
+                    className="text-xs text-blue-400 hover:underline font-semibold"
+                  >
+                    See All
+                  </button>
+                </div>
+
+                {/* Empty State or Recent Transactions list */}
+                <div className="bg-[#121927] border border-gray-800 rounded-2xl p-6 text-center">
+                  <div className="text-4xl mb-2">📜</div>
+                  <h5 className="text-sm font-bold text-white mb-1">No recent transactions</h5>
+                  <p className="text-[11px] text-gray-400 leading-relaxed">Your deposits and withdrawals will appear here.</p>
+                </div>
+              </div>
+
             </div>
           </div>
         )}
