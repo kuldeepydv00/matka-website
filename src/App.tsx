@@ -1208,7 +1208,7 @@ export default function App() {
                       }}
                       className="w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-xs font-bold text-[#FFE485] hover:bg-[#F3D079]/10 transition-all text-left"
                     >
-                      <span className="text-base">🎁</span> Refer & Earn (₹50 Bonus)
+                      <span className="text-base">🎁</span> Refer & Earn (Lifetime Commission)
                     </button>
 
                     <a
