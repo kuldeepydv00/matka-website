@@ -51,7 +51,18 @@ export default function App() {
   const [authError, setAuthError] = useState('');
 
   // Player User Session
-  const [user, setUser] = useState<{ name: string; mobile: string; balance: number; referral_code?: string; referralsCount?: number } | null>(null);
+  const [user, setUser] = useState<{
+    name: string;
+    mobile: string;
+    balance: number;
+    deposit_balance?: number;
+    winning_balance?: number;
+    bonus_balance?: number;
+    commission_balance?: number;
+    withdrawable_balance?: number;
+    referral_code?: string;
+    referralsCount?: number;
+  } | null>(null);
 
   // App Data States
   const [declaredResults, setDeclaredResults] = useState<Record<string, number>>({});
@@ -247,8 +258,9 @@ export default function App() {
       return;
     }
 
-    if (user && numAmt > user.balance) {
-      setWithdrawMessage(`Error: Insufficient balance. Available: ₹${user.balance.toFixed(2)}`);
+    const withdrawable = user?.winning_balance !== undefined ? user.winning_balance : (user?.balance || 0);
+    if (user && numAmt > withdrawable) {
+      setWithdrawMessage(`Error: You can only withdraw your winning balance. Withdrawable balance: ₹${withdrawable.toFixed(2)}`);
       return;
     }
 
@@ -374,7 +386,12 @@ export default function App() {
             const updated = { 
               name: currentName,
               mobile: activeMobile,
-              balance: currentBal 
+              balance: currentBal,
+              deposit_balance: uData.deposit_balance !== undefined ? uData.deposit_balance : (prev?.deposit_balance || 0),
+              winning_balance: uData.winning_balance !== undefined ? uData.winning_balance : (prev?.winning_balance || 0),
+              bonus_balance: uData.bonus_balance !== undefined ? uData.bonus_balance : (prev?.bonus_balance !== undefined ? prev.bonus_balance : 200),
+              commission_balance: uData.commission_balance !== undefined ? uData.commission_balance : (prev?.commission_balance || 0),
+              withdrawable_balance: uData.winning_balance !== undefined ? uData.winning_balance : (prev?.winning_balance || 0)
             };
             localStorage.setItem('95x_web_user', JSON.stringify(updated));
             return updated;
@@ -2348,14 +2365,14 @@ export default function App() {
                   {/* Commission */}
                   <div className="text-center">
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">COMMISSION</p>
-                    <p className="text-sm font-black font-mono text-white">₹ {(referralDetails?.totalCommission || 0).toFixed(2)}</p>
+                    <p className="text-sm font-black font-mono text-white">₹ {(user?.commission_balance !== undefined ? user.commission_balance : (referralDetails?.totalCommission || 0)).toFixed(2)}</p>
                   </div>
                   {/* Vertical Divider */}
                   <div className="w-[1px] h-8 bg-[#2A364F]" />
                   {/* Bonus */}
                   <div className="text-center">
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">BONUS</p>
-                    <p className="text-sm font-black font-mono text-[#00C853]">₹ 0.00</p>
+                    <p className="text-sm font-black font-mono text-[#00C853]">₹ {(user?.bonus_balance !== undefined ? user.bonus_balance : 200).toFixed(2)}</p>
                   </div>
                 </div>
 
@@ -2495,8 +2512,8 @@ export default function App() {
               {/* Wallet Balance Info */}
               <div className="bg-[#0F172A] p-3.5 rounded-2xl border border-gray-800 flex justify-between items-center mb-4">
                 <div>
-                  <p className="text-[10px] text-gray-400 uppercase font-bold">Available Balance</p>
-                  <h4 className="text-base font-black font-mono text-[#00C853]">₹{user?.balance ? user.balance.toFixed(2) : '0.00'}</h4>
+                  <p className="text-[10px] text-gray-400 uppercase font-bold">Withdrawable Balance (Winnings)</p>
+                  <h4 className="text-base font-black font-mono text-[#00C853]">₹{user?.winning_balance !== undefined ? user.winning_balance.toFixed(2) : (user?.balance ? user.balance.toFixed(2) : '0.00')}</h4>
                 </div>
                 <span className="text-[10px] bg-yellow-500/10 border border-yellow-500/30 text-[#F3D079] px-2.5 py-1 rounded-full font-bold">
                   Min: ₹500
