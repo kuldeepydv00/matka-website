@@ -47,17 +47,18 @@ export default function App() {
   const [registerPassword, setRegisterPassword] = useState('123456');
   const [referralCodeInput, setReferralCodeInput] = useState('');
   const [isExistingUser, setIsExistingUser] = useState(false);
-  const [existingUserData, setExistingUserData] = useState<{ name: string; mobile: string; balance: number; referral_code?: string } | null>(null);
+  const [existingUserData, setExistingUserData] = useState<{ name: string; mobile: string; balance: number; referral_code?: string; referralsCount?: number } | null>(null);
   const [authError, setAuthError] = useState('');
 
   // Player User Session
-  const [user, setUser] = useState<{ name: string; mobile: string; balance: number; referral_code?: string } | null>(null);
+  const [user, setUser] = useState<{ name: string; mobile: string; balance: number; referral_code?: string; referralsCount?: number } | null>(null);
 
   // App Data States
   const [declaredResults, setDeclaredResults] = useState<Record<string, number>>({});
   const [bannerConfig, setBannerConfig] = useState<any>(null);
 
   // WebApp Modal & Bidding States
+  const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
   const [selectedGameForBetting, setSelectedGameForBetting] = useState<string | null>(null);
   const [betCategory, setBetCategory] = useState<'Jodi' | 'Crossing' | 'Haruf'>('Jodi');
   const [harufSubTab, setHarufSubTab] = useState<'Ander' | 'Bahar'>('Ander');
