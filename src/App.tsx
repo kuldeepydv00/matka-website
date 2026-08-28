@@ -116,10 +116,10 @@ export default function App() {
   };
 
   useEffect(() => {
-    if (showReferralModal && user?.mobile) {
+    if (user?.mobile) {
       fetchWebsiteReferralDetails();
     }
-  }, [showReferralModal, user]);
+  }, [showReferralModal, user?.mobile]);
 
   const formatChartDateDisplay = (dateStr: string) => {
     try {
@@ -350,6 +350,19 @@ export default function App() {
         if (bHistoryRes.ok) {
           const bHistory = await bHistoryRes.json();
           setMyBetsList(bHistory);
+        }
+
+        // Fetch Referral Stats Live
+        const cleanMob = activeMobile.replace(/[^0-9]/g, '').slice(-10);
+        const refRes = await fetchApi(`/api/user/referral-details?mobile=${cleanMob}`);
+        if (refRes.ok) {
+          const refData = await refRes.json();
+          setReferralDetails({
+            referral_code: refData.referral_code || `REF${cleanMob}`,
+            referralsCount: refData.referralsCount || 0,
+            totalCommission: refData.totalCommission || 0,
+            referredUsers: refData.referredUsers || []
+          });
         }
       }
     } catch (e) {}
