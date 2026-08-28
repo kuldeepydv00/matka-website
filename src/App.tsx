@@ -647,7 +647,7 @@ export default function App() {
               </div>
             </div>
 
-            {/* 3 Action Buttons (Exact Copy of User Reference Screenshot!) */}
+            {/* 2 Action Buttons (INSTALL APP & PLAY ONLINE) */}
             <div className="px-5 my-5 space-y-3">
               <button 
                 onClick={handleDownloadApk}
@@ -657,18 +657,18 @@ export default function App() {
               </button>
 
               <button 
-                onClick={() => { setAuthStep('phone'); setView('auth'); }}
-                className="w-full bg-[#333333] hover:bg-[#222222] text-white font-black py-3.5 rounded-xl shadow-sm flex items-center justify-center gap-2 text-sm tracking-wider uppercase transition-all"
-              >
-                <UserPlus className="w-4 h-4 stroke-[3]" /> REGISTER NOW
-              </button>
-
-              <button 
                 onClick={() => {
-                  if (user) setView('webapp');
-                  else { setAuthStep('phone'); setView('auth'); }
+                  if (user) {
+                    setView('webapp');
+                  } else {
+                    setAuthStep('phone');
+                    setMobileNumber('');
+                    setOtpInput('');
+                    setAuthError('');
+                    setView('auth');
+                  }
                 }}
-                className="w-full bg-white hover:bg-gray-50 text-gray-900 font-black py-3 rounded-xl border-2 border-[#333333] shadow-sm flex items-center justify-center gap-2 text-sm tracking-wider uppercase transition-all"
+                className="w-full bg-white hover:bg-gray-50 text-gray-900 font-black py-3.5 rounded-xl border-2 border-[#333333] shadow-sm flex items-center justify-center gap-2 text-sm tracking-wider uppercase transition-all"
               >
                 <Play className="w-4 h-4 fill-gray-900 text-gray-900" /> PLAY ONLINE
               </button>
@@ -1146,6 +1146,11 @@ export default function App() {
                     <button
                       onClick={() => {
                         setUser(null);
+                        localStorage.removeItem('95x_web_user');
+                        setAuthStep('phone');
+                        setMobileNumber('');
+                        setOtpInput('');
+                        setAuthError('');
                         setView('landing');
                         setIsSideMenuOpen(false);
                       }}
