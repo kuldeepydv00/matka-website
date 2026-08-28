@@ -2238,70 +2238,159 @@ export default function App() {
         )}
 
         {/* ========================================================= */}
-        {/* MODAL 4: REFERRAL & EARN MODAL                           */}
+        {/* MODAL 4: REFERRAL PAGE (100% COPY OF SCREENSHOT)         */}
         {/* ========================================================= */}
         {showReferralModal && (
-          <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-            <div className="bg-gradient-to-br from-[#1E293B] to-[#0F172A] border-2 border-[#F3D079] rounded-3xl w-full max-w-sm p-6 shadow-2xl relative text-center">
-              <button 
-                onClick={() => setShowReferralModal(false)}
-                className="absolute top-4 right-4 text-gray-400 hover:text-white"
-              >
-                <X className="w-5 h-5" />
-              </button>
-
-              <div className="w-16 h-16 bg-gradient-to-tr from-[#F3D079] to-[#FFF1B8] rounded-2xl mx-auto flex items-center justify-center text-3xl shadow-lg border border-amber-300/40 mb-3">
-                🎁
+          <div className="fixed inset-0 bg-[#E2E8F0] z-50 overflow-y-auto flex flex-col justify-between">
+            {/* Top Dark Header (100% Copy of Screenshot) */}
+            <div className="bg-[#0F172A] px-4 py-3 border-b border-[#1E293B] flex justify-between items-center sticky top-0 z-30 shadow-md">
+              <div className="flex items-center gap-3">
+                <button 
+                  onClick={() => setShowReferralModal(false)}
+                  className="text-white text-2xl font-bold hover:text-[#F3D079]"
+                >
+                  ✕
+                </button>
+                <div>
+                  <h1 className="text-lg font-black text-[#F3D079] tracking-wide leading-tight">Referral</h1>
+                  <p className="text-[10px] font-semibold text-[#94A3B8]">Play Smart • Play Safe • Win Big</p>
+                </div>
               </div>
 
-              <h3 className="text-xl font-black text-[#FFE485] tracking-wide mb-1">
-                REFER & EARN ₹50
-              </h3>
-              <p className="text-xs text-gray-300 mb-4">
-                Share your referral code with friends and earn <strong className="text-[#00C853]">₹50 Instant Bonus</strong> + <strong className="text-[#F3D079]">4% Lifetime Commission</strong> on every bet!
-              </p>
+              {/* Balance Badge (100% Copy of Screenshot) */}
+              <button 
+                onClick={() => {
+                  setShowReferralModal(false);
+                  setShowDepositModal(true);
+                }}
+                className="bg-[#00C853] hover:bg-[#00B248] text-white px-3 py-1.5 rounded-full flex items-center gap-2 text-xs font-mono font-black shadow-md transition-all"
+              >
+                <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+                <span>₹{(user?.balance || 3520).toFixed(2)}</span>
+                <span className="w-5 h-5 rounded-full bg-white text-[#00C853] flex items-center justify-center font-bold text-sm">+</span>
+              </button>
+            </div>
 
-              {/* Unique Referral Code Badge */}
-              {(() => {
-                const userRefCode = user?.referral_code || (user?.mobile ? `REF${user.mobile.slice(-10)}` : 'REF1472580369');
-                const shareText = `Play 95X Matka & Win 95X! 👑\nUse my Referral Code: ${userRefCode} to get ₹50 bonus balance!\nPlay online: https://matka-website.vercel.app`;
-                const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
+            {/* Main Content Area (100% Copy of Screenshot) */}
+            <div className="p-4 flex-1 max-w-md mx-auto w-full space-y-4 text-gray-900 pb-28">
+              {/* CARD 1: TOTAL COMMISSION */}
+              <div className="bg-white rounded-2xl shadow-md border border-gray-200 overflow-hidden">
+                <div className="bg-[#141C2E] px-4 py-2.5 flex justify-between items-center text-white">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm">🎟️</span>
+                    <span className="text-xs font-black tracking-wider uppercase">TOTAL COMMISSION</span>
+                  </div>
+                  <button className="text-xs hover:rotate-180 transition-transform">🔄</button>
+                </div>
+                <div className="p-4">
+                  <div className="bg-[#FFFBEB] border-2 border-[#FCD34D] rounded-2xl py-4 text-center">
+                    <span className="text-2xl font-mono font-black text-gray-900">₹{(user?.referralsCount || 0) * 50}/-</span>
+                  </div>
+                </div>
+              </div>
 
-                return (
-                  <div className="space-y-3">
-                    <div className="bg-[#090D16] border border-amber-400/40 rounded-2xl p-4 shadow-inner">
-                      <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">YOUR UNIQUE REFERRAL CODE</div>
-                      <div className="text-2xl font-black font-mono text-[#FFE485] tracking-wider select-all">
-                        {userRefCode}
+              {/* CARD 2: YOUR REFERRAL CODE */}
+              <div className="bg-white rounded-2xl shadow-md border border-gray-200 overflow-hidden">
+                <div className="bg-[#00873E] px-4 py-2.5 flex items-center gap-2 text-white">
+                  <span className="text-sm">🎁</span>
+                  <span className="text-xs font-black tracking-wider uppercase">YOUR REFERRAL CODE</span>
+                </div>
+                <div className="p-4 text-center">
+                  {(() => {
+                    const userRefCode = user?.referral_code || (user?.mobile ? `REF${user.mobile.slice(-10)}` : 'REF1472580369');
+                    const shareText = `Play 95X Matka & Win 95X! 👑\nUse my Referral Code: ${userRefCode} to get ₹50 bonus balance!\nPlay online: https://matka-website.vercel.app`;
+                    const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
+
+                    return (
+                      <div className="space-y-4">
+                        <div className="bg-[#FFFBEB] border-2 border-[#FCD34D] rounded-2xl py-3.5 px-2">
+                          <div className="text-xl font-mono font-black text-gray-900 tracking-[0.25em] select-all">
+                            {userRefCode.split('').join('  ')}
+                          </div>
+                        </div>
+
+                        <div className="text-xs font-semibold text-gray-500">
+                          https://matka-website.vercel.app/
+                        </div>
+
+                        {/* Side-by-Side Action Buttons */}
+                        <div className="grid grid-cols-2 gap-3">
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(shareText);
+                              setCopiedToast(true);
+                              setTimeout(() => setCopiedToast(false), 2500);
+                            }}
+                            className="bg-[#00873E] hover:bg-[#007033] text-white font-bold py-2.5 px-3 rounded-xl flex justify-center items-center gap-2 text-xs uppercase tracking-wider shadow-sm transition-all"
+                          >
+                            <span>📋</span>
+                            <span>{copiedToast ? 'COPIED!' : 'Copy Code'}</span>
+                          </button>
+
+                          <a
+                            href={whatsappUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="bg-white border border-gray-300 hover:bg-gray-50 text-gray-800 font-bold py-2.5 px-3 rounded-xl flex justify-center items-center gap-2 text-xs uppercase tracking-wider shadow-sm transition-all"
+                          >
+                            <span>🔀</span>
+                            <span>Share</span>
+                          </a>
+                        </div>
+
+                        {/* Step Process Indicator (1 Share -> 2 They sign up -> 3 You earn) */}
+                        <div className="grid grid-cols-3 gap-2 pt-2 border-t border-gray-100">
+                          <div className="flex flex-col items-center">
+                            <div className="w-7 h-7 rounded-full bg-[#FFFBEB] border border-[#FCD34D] flex items-center justify-center font-black text-xs text-gray-900 mb-1">1</div>
+                            <span className="text-[10px] font-medium text-gray-600">Share your code</span>
+                          </div>
+                          <div className="flex flex-col items-center">
+                            <div className="w-7 h-7 rounded-full bg-[#FFFBEB] border border-[#FCD34D] flex items-center justify-center font-black text-xs text-gray-900 mb-1">2</div>
+                            <span className="text-[10px] font-medium text-gray-600">They sign up</span>
+                          </div>
+                          <div className="flex flex-col items-center">
+                            <div className="w-7 h-7 rounded-full bg-[#FFFBEB] border border-[#FCD34D] flex items-center justify-center font-black text-xs text-gray-900 mb-1">3</div>
+                            <span className="text-[10px] font-medium text-gray-600">You earn</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              </div>
+
+              {/* CARD 3: TOTAL REFERRALS */}
+              <div className="bg-white rounded-2xl shadow-md border border-gray-200 overflow-hidden">
+                <div className="bg-[#141C2E] px-4 py-2.5 flex justify-between items-center text-white">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm">👥</span>
+                    <span className="text-xs font-black tracking-wider uppercase">TOTAL REFERRALS</span>
+                  </div>
+                  <div className="bg-[#FFFBEB] text-gray-900 px-2.5 py-0.5 rounded-full text-xs font-black flex items-center gap-1">
+                    <span>👤</span>
+                    <span>{user?.referralsCount || 0}</span>
+                  </div>
+                </div>
+
+                <div className="p-6 text-center">
+                  {(user?.referralsCount || 0) === 0 ? (
+                    <div className="py-4">
+                      <div className="text-4xl mb-2">👥</div>
+                      <p className="text-sm font-bold text-gray-500">No referrals yet</p>
+                    </div>
+                  ) : (
+                    <div className="text-left text-xs space-y-2">
+                      <div className="p-3 bg-gray-50 rounded-xl border border-gray-200 flex justify-between items-center">
+                        <div>
+                          <p className="font-bold text-gray-800">Invited Player</p>
+                          <p className="text-gray-500 text-[10px]">Active User • +₹50 Bonus</p>
+                        </div>
+                        <span className="font-black text-[#00873E] text-sm">+₹50</span>
                       </div>
                     </div>
-
-                    {/* Action 1: Copy Code & Link */}
-                    <button
-                      onClick={() => {
-                        navigator.clipboard.writeText(shareText);
-                        setCopiedToast(true);
-                        setTimeout(() => setCopiedToast(false), 2500);
-                      }}
-                      className="w-full bg-gradient-to-r from-[#1E293B] to-[#334155] border border-amber-400/50 hover:bg-gray-700 text-white font-bold py-3.5 px-4 rounded-xl flex justify-center items-center gap-2 text-xs uppercase tracking-wider shadow-md transition-all"
-                    >
-                      <span>📋</span>
-                      <span>{copiedToast ? '✅ COPIED TO CLIPBOARD!' : 'COPY REFERRAL CODE & LINK'}</span>
-                    </button>
-
-                    {/* Action 2: Share directly to WhatsApp */}
-                    <a
-                      href={whatsappUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="w-full bg-[#00C853] hover:bg-[#00B248] text-white font-black py-3.5 px-4 rounded-xl flex justify-center items-center gap-2 text-xs uppercase tracking-wider shadow-lg transition-all"
-                    >
-                      <span className="text-base">💬</span>
-                      <span>SHARE ON WHATSAPP</span>
-                    </a>
-                  </div>
-                );
-              })()}
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         )}
