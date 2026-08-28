@@ -1665,9 +1665,17 @@ export default function App() {
                       <span className="text-sm">👥</span>
                       <span className="text-xs font-black tracking-wider uppercase">TOTAL REFERRALS</span>
                     </div>
-                    <div className="bg-[#0F172A] border border-[#F3D079] text-[#F3D079] px-2.5 py-0.5 rounded-full text-xs font-black flex items-center gap-1">
-                      <span>👤</span>
-                      <span>{referralDetails.referralsCount || 0}</span>
+                    <div className="flex items-center gap-2">
+                      <button 
+                        onClick={fetchWebsiteReferralDetails}
+                        className="bg-[#0F172A] border border-[#334155] text-xs text-[#00C853] font-bold px-2 py-0.5 rounded-lg flex items-center gap-1 hover:bg-[#1E293B] transition-all"
+                      >
+                        <span>🔄</span> Refresh
+                      </button>
+                      <div className="bg-[#0F172A] border border-[#F3D079] text-[#F3D079] px-2.5 py-0.5 rounded-full text-xs font-black flex items-center gap-1">
+                        <span>👤</span>
+                        <span>{referralDetails.referralsCount || 0}</span>
+                      </div>
                     </div>
                   </div>
 
