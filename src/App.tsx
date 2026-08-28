@@ -563,10 +563,18 @@ export default function App() {
         }
       });
     } else if (betCategory === 'Haruf') {
-      Object.entries(jodiGrid).forEach(([num, valStr]) => {
+      Object.entries(jodiGrid).forEach(([key, valStr]) => {
         const val = Math.max(0, parseInt(valStr) || 0);
         if (val > 0) {
-          activeBets.push({ num, amt: val, type: harufSubTab === 'Ander' ? 'HAROOF_ANDER' : 'HAROOF_BAHAR' });
+          if (key.startsWith('A')) {
+            const num = key.replace('A', '');
+            activeBets.push({ num, amt: val, type: 'HAROOF_ANDER' });
+          } else if (key.startsWith('B')) {
+            const num = key.replace('B', '');
+            activeBets.push({ num, amt: val, type: 'HAROOF_BAHAR' });
+          } else {
+            activeBets.push({ num: key, amt: val, type: 'HAROOF_ANDER' });
+          }
         }
       });
     }
@@ -2044,73 +2052,104 @@ export default function App() {
                 </div>
               )}
 
-              {/* HARUF TAB: 10 Cards Grid (0 - 9) with Ander / Bahar Sub-tabs */}
+              {/* HARUF TAB: Side-by-Side ANDER & BAHAR Tables (Matching Screenshot!) */}
               {betCategory === 'Haruf' && (
                 <div>
                   <div className="flex justify-between items-center mb-3">
-                    <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">HAROOF NUMBERS (0-9)</span>
+                    <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">HAROOF BIDDING (A0-A9 & B0-B9)</span>
                     <button onClick={() => setJodiGrid({})} className="text-[11px] text-amber-400 hover:text-amber-300 font-bold underline">Clear All</button>
                   </div>
 
-                  <div className="bg-[#182234] p-1 rounded-xl border border-gray-800 flex gap-1 mb-4">
-                    <button 
-                      onClick={() => setHarufSubTab('Ander')}
-                      className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
-                        harufSubTab === 'Ander' ? 'bg-[#00C853] text-white shadow-md' : 'text-gray-400 hover:text-white'
-                      }`}
-                    >
-                      Ander (Inside)
-                    </button>
-                    <button 
-                      onClick={() => setHarufSubTab('Bahar')}
-                      className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
-                        harufSubTab === 'Bahar' ? 'bg-[#00C853] text-white shadow-md' : 'text-gray-400 hover:text-white'
-                      }`}
-                    >
-                      Bahar (Outside)
-                    </button>
-                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    {/* ANDER Column */}
+                    <div className="bg-[#182234] border border-gray-800/90 rounded-2xl overflow-hidden p-2">
+                      <div className="bg-[#0F172A] py-2 px-3 text-center border-b border-gray-800 rounded-xl mb-2">
+                        <h4 className="text-xs font-black text-white tracking-wider uppercase">ANDER</h4>
+                      </div>
+                      <div className="space-y-1.5">
+                        {Array.from({ length: 10 }).map((_, idx) => {
+                          const key = `A${idx}`;
+                          const val = jodiGrid[key] || '';
+                          return (
+                            <div 
+                              key={key}
+                              className={`flex items-center justify-between p-1.5 rounded-xl border transition-all ${
+                                val ? 'bg-emerald-950/60 border-emerald-500/80' : 'bg-[#0F172A]/70 border-gray-800'
+                              }`}
+                            >
+                              <span className="text-xs font-black font-mono text-white px-2">{key}</span>
+                              <div className="flex items-center bg-[#182234] rounded-lg border border-gray-700/80 px-2 py-1 w-20">
+                                <span className="text-[10px] text-gray-400 font-bold mr-1">₹</span>
+                                <input
+                                  type="number"
+                                  min="1"
+                                  value={val}
+                                  onKeyDown={(e) => {
+                                    if (['-', '+', 'e', 'E', '.'].includes(e.key)) e.preventDefault();
+                                  }}
+                                  onChange={(e) => {
+                                    const cleanVal = e.target.value.replace(/[^0-9]/g, '');
+                                    if (!cleanVal || parseInt(cleanVal) <= 0) {
+                                      const newGrid = { ...jodiGrid };
+                                      delete newGrid[key];
+                                      setJodiGrid(newGrid);
+                                    } else {
+                                      setJodiGrid({ ...jodiGrid, [key]: cleanVal });
+                                    }
+                                  }}
+                                  className={`w-full text-center text-xs font-mono font-bold focus:outline-none bg-transparent ${val ? 'text-emerald-300' : 'text-white'}`}
+                                />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
 
-                  <div className="grid grid-cols-5 gap-2">
-                    {Array.from({ length: 10 }).map((_, idx) => {
-                      const numStr = String(idx);
-                      const val = jodiGrid[numStr] || '';
-                      return (
-                        <div 
-                          key={numStr}
-                          className={`rounded-xl border transition-all p-2 flex flex-col items-center justify-between min-h-[64px] ${
-                            val ? 'bg-emerald-950/60 border-emerald-500/80 shadow-lg shadow-emerald-950/50' : 'bg-[#182234] border-gray-800/90 hover:border-gray-700'
-                          }`}
-                        >
-                          <span className={`text-xs font-mono font-black ${val ? 'text-emerald-400' : 'text-gray-200'}`}>{numStr}</span>
-                          <div className="w-full mt-1 flex items-center justify-center bg-[#0F172A] rounded-lg border border-gray-800 px-1 py-0.5">
-                            <span className="text-[9px] text-gray-400 font-bold mr-0.5">₹</span>
-                            <input
-                              type="number"
-                              min="1"
-                              placeholder=""
-                              value={val}
-                              onKeyDown={(e) => {
-                                if (['-', '+', 'e', 'E', '.'].includes(e.key)) {
-                                  e.preventDefault();
-                                }
-                              }}
-                              onChange={(e) => {
-                                const cleanVal = e.target.value.replace(/[^0-9]/g, '');
-                                if (!cleanVal || parseInt(cleanVal) <= 0) {
-                                  const newGrid = { ...jodiGrid };
-                                  delete newGrid[numStr];
-                                  setJodiGrid(newGrid);
-                                } else {
-                                  setJodiGrid({ ...jodiGrid, [numStr]: cleanVal });
-                                }
-                              }}
-                              className={`w-full text-center text-[11px] font-mono font-bold focus:outline-none bg-transparent ${val ? 'text-emerald-300' : 'text-white'}`}
-                            />
-                          </div>
-                        </div>
-                      );
-                    })}
+                    {/* BAHAR Column */}
+                    <div className="bg-[#182234] border border-gray-800/90 rounded-2xl overflow-hidden p-2">
+                      <div className="bg-[#0F172A] py-2 px-3 text-center border-b border-gray-800 rounded-xl mb-2">
+                        <h4 className="text-xs font-black text-white tracking-wider uppercase">BAHAR</h4>
+                      </div>
+                      <div className="space-y-1.5">
+                        {Array.from({ length: 10 }).map((_, idx) => {
+                          const key = `B${idx}`;
+                          const val = jodiGrid[key] || '';
+                          return (
+                            <div 
+                              key={key}
+                              className={`flex items-center justify-between p-1.5 rounded-xl border transition-all ${
+                                val ? 'bg-emerald-950/60 border-emerald-500/80' : 'bg-[#0F172A]/70 border-gray-800'
+                              }`}
+                            >
+                              <span className="text-xs font-black font-mono text-white px-2">{key}</span>
+                              <div className="flex items-center bg-[#182234] rounded-lg border border-gray-700/80 px-2 py-1 w-20">
+                                <span className="text-[10px] text-gray-400 font-bold mr-1">₹</span>
+                                <input
+                                  type="number"
+                                  min="1"
+                                  value={val}
+                                  onKeyDown={(e) => {
+                                    if (['-', '+', 'e', 'E', '.'].includes(e.key)) e.preventDefault();
+                                  }}
+                                  onChange={(e) => {
+                                    const cleanVal = e.target.value.replace(/[^0-9]/g, '');
+                                    if (!cleanVal || parseInt(cleanVal) <= 0) {
+                                      const newGrid = { ...jodiGrid };
+                                      delete newGrid[key];
+                                      setJodiGrid(newGrid);
+                                    } else {
+                                      setJodiGrid({ ...jodiGrid, [key]: cleanVal });
+                                    }
+                                  }}
+                                  className={`w-full text-center text-xs font-mono font-bold focus:outline-none bg-transparent ${val ? 'text-emerald-300' : 'text-white'}`}
+                                />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
