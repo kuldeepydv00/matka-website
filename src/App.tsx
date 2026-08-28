@@ -462,20 +462,19 @@ export default function App() {
         } catch (e) {}
       }
 
-      if (referralCodeInput.trim()) {
-        try {
-          await fetchApi('/api/user/register', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              name: registeredProfile?.name || `User ${cleanMobile.slice(-4)}`,
-              mobile: cleanMobile,
-              password: '123',
-              referral_code: referralCodeInput.trim()
-            })
-          });
-        } catch (e) {}
-      }
+      // ALWAYS register / sync user with backend server & MongoDB Atlas
+      try {
+        await fetchApi('/api/user/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: registeredProfile?.name || `User ${cleanMobile.slice(-4)}`,
+            mobile: cleanMobile,
+            password: '123',
+            referral_code: referralCodeInput.trim()
+          })
+        });
+      } catch (e) {}
 
       if (registeredProfile || isExistingUser) {
         // ALREADY REGISTERED USER -> Redirect directly to Main WebApp Page!
