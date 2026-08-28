@@ -414,6 +414,21 @@ export default function App() {
         } catch (e) {}
       }
 
+      if (referralCodeInput.trim()) {
+        try {
+          await fetchApi('/api/user/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name: registeredProfile?.name || `User ${cleanMobile.slice(-4)}`,
+              mobile: cleanMobile,
+              password: '123',
+              referral_code: referralCodeInput.trim()
+            })
+          });
+        } catch (e) {}
+      }
+
       if (registeredProfile || isExistingUser) {
         // ALREADY REGISTERED USER -> Redirect directly to Main WebApp Page!
         const loggedInUser = registeredProfile || {
@@ -927,6 +942,20 @@ export default function App() {
                         value={mobileNumber}
                         onChange={(e) => setMobileNumber(e.target.value.replace(/[^0-9]/g, ''))}
                         className="w-full bg-transparent p-3 text-sm text-white focus:outline-none font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Referral Code (Optional)</label>
+                    <div className="flex bg-[#1E293B] border border-[#334155] rounded-xl overflow-hidden">
+                      <span className="px-3.5 py-3 text-sm font-bold text-[#F3D079] border-r border-[#334155] bg-[#0F172A] flex items-center">🎁</span>
+                      <input
+                        type="text"
+                        placeholder="Enter Referral Code (e.g. REF7027709695)"
+                        value={referralCodeInput}
+                        onChange={(e) => setReferralCodeInput(e.target.value.toUpperCase())}
+                        className="w-full bg-transparent p-3 text-sm text-[#F3D079] focus:outline-none font-mono tracking-wider uppercase"
                       />
                     </div>
                   </div>
