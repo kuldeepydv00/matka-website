@@ -96,29 +96,26 @@ export default function App() {
   });
 
   const fetchWebsiteReferralDetails = async () => {
-    if (!user?.mobile) return;
-    const cleanMobile = user.mobile.replace(/[^0-9]/g, '').slice(-10);
-    for (const base of ['https://matka-r6mz.onrender.com', 'http://localhost:5001']) {
-      try {
-        const res = await fetch(`${base}/api/user/referral-details?mobile=${cleanMobile}`);
-        if (res.ok) {
-          const data = await res.json();
-          setReferralDetails({
-            referral_code: data.referral_code || `REF${cleanMobile}`,
-            referralsCount: data.referralsCount || 0,
-            totalCommission: data.totalCommission || 0,
-            referredUsers: data.referredUsers || []
-          });
-          break;
-        }
-      } catch (e) {}
-    }
+    const saved = localStorage.getItem('95x_web_user');
+    const mob = user?.mobile || (saved ? JSON.parse(saved)?.mobile : null);
+    if (!mob) return;
+    const cleanMobile = mob.replace(/[^0-9]/g, '').slice(-10);
+    try {
+      const res = await fetchApi(`/api/user/referral-details?mobile=${cleanMobile}`);
+      if (res.ok) {
+        const data = await res.json();
+        setReferralDetails({
+          referral_code: data.referral_code || `REF${cleanMobile}`,
+          referralsCount: data.referralsCount !== undefined ? data.referralsCount : 0,
+          totalCommission: data.totalCommission !== undefined ? data.totalCommission : 0,
+          referredUsers: data.referredUsers || []
+        });
+      }
+    } catch (e) {}
   };
 
   useEffect(() => {
-    if (user?.mobile) {
-      fetchWebsiteReferralDetails();
-    }
+    fetchWebsiteReferralDetails();
   }, [showReferralModal, user?.mobile]);
 
   const formatChartDateDisplay = (dateStr: string) => {
