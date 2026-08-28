@@ -2238,12 +2238,12 @@ export default function App() {
         )}
 
         {/* ========================================================= */}
-        {/* MODAL 4: REFERRAL PAGE (100% COPY OF SCREENSHOT)         */}
+        {/* MODAL 4: REFERRAL PAGE (DARK LUXURY MATKA THEME)         */}
         {/* ========================================================= */}
         {showReferralModal && (
-          <div className="fixed inset-0 bg-[#E2E8F0] z-50 overflow-y-auto flex flex-col justify-between">
-            {/* Top Dark Header (100% Copy of Screenshot) */}
-            <div className="bg-[#0F172A] px-4 py-3 border-b border-[#1E293B] flex justify-between items-center sticky top-0 z-30 shadow-md">
+          <div className="fixed inset-0 bg-[#0F172A] z-50 overflow-y-auto flex flex-col justify-between">
+            {/* Top Dark Header */}
+            <div className="bg-[#1E293B] px-4 py-3 border-b border-[#334155] flex justify-between items-center sticky top-0 z-30 shadow-md">
               <div className="flex items-center gap-3">
                 <button 
                   onClick={() => setShowReferralModal(false)}
@@ -2257,7 +2257,7 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Balance Badge (100% Copy of Screenshot) */}
+              {/* Balance Badge */}
               <button 
                 onClick={() => {
                   setShowReferralModal(false);
@@ -2271,11 +2271,11 @@ export default function App() {
               </button>
             </div>
 
-            {/* Main Content Area (100% Copy of Screenshot) */}
-            <div className="p-4 flex-1 max-w-md mx-auto w-full space-y-4 text-gray-900 pb-28">
+            {/* Main Content Area */}
+            <div className="p-4 flex-1 max-w-md mx-auto w-full space-y-4 text-white pb-28">
               {/* CARD 1: TOTAL COMMISSION */}
-              <div className="bg-white rounded-2xl shadow-md border border-gray-200 overflow-hidden">
-                <div className="bg-[#141C2E] px-4 py-2.5 flex justify-between items-center text-white">
+              <div className="bg-[#1E293B] rounded-2xl shadow-lg border border-[#334155] overflow-hidden">
+                <div className="bg-[#162238] px-4 py-2.5 flex justify-between items-center text-white">
                   <div className="flex items-center gap-2">
                     <span className="text-sm">🎟️</span>
                     <span className="text-xs font-black tracking-wider uppercase">TOTAL COMMISSION</span>
@@ -2283,14 +2283,14 @@ export default function App() {
                   <button className="text-xs hover:rotate-180 transition-transform">🔄</button>
                 </div>
                 <div className="p-4">
-                  <div className="bg-[#FFFBEB] border-2 border-[#FCD34D] rounded-2xl py-4 text-center">
-                    <span className="text-2xl font-mono font-black text-gray-900">₹{(user?.referralsCount || 0) * 50}/-</span>
+                  <div className="bg-[#0F172A] border-2 border-[#F3D079] rounded-2xl py-4 text-center">
+                    <span className="text-2xl font-mono font-black text-[#F3D079]">₹{(user?.referralsCount || 0) * 50}/-</span>
                   </div>
                 </div>
               </div>
 
               {/* CARD 2: YOUR REFERRAL CODE */}
-              <div className="bg-white rounded-2xl shadow-md border border-gray-200 overflow-hidden">
+              <div className="bg-[#1E293B] rounded-2xl shadow-lg border border-[#334155] overflow-hidden">
                 <div className="bg-[#00873E] px-4 py-2.5 flex items-center gap-2 text-white">
                   <span className="text-sm">🎁</span>
                   <span className="text-xs font-black tracking-wider uppercase">YOUR REFERRAL CODE</span>
@@ -2303,13 +2303,13 @@ export default function App() {
 
                     return (
                       <div className="space-y-4">
-                        <div className="bg-[#FFFBEB] border-2 border-[#FCD34D] rounded-2xl py-3.5 px-2">
-                          <div className="text-xl font-mono font-black text-gray-900 tracking-[0.25em] select-all">
-                            {userRefCode.split('').join('  ')}
+                        <div className="bg-[#0F172A] border-2 border-[#F3D079] rounded-2xl py-3.5 px-3">
+                          <div className="text-xl font-mono font-black text-[#F3D079] tracking-[0.2em] select-all whitespace-nowrap overflow-x-auto">
+                            {userRefCode}
                           </div>
                         </div>
 
-                        <div className="text-xs font-semibold text-gray-500">
+                        <div className="text-xs font-semibold text-[#94A3B8]">
                           https://matka-website.vercel.app/
                         </div>
 
@@ -2331,26 +2331,26 @@ export default function App() {
                             href={whatsappUrl}
                             target="_blank"
                             rel="noreferrer"
-                            className="bg-white border border-gray-300 hover:bg-gray-50 text-gray-800 font-bold py-2.5 px-3 rounded-xl flex justify-center items-center gap-2 text-xs uppercase tracking-wider shadow-sm transition-all"
+                            className="bg-[#F59E0B] hover:bg-[#D97706] text-[#0F172A] font-black py-2.5 px-3 rounded-xl flex justify-center items-center gap-2 text-xs uppercase tracking-wider shadow-sm transition-all"
                           >
                             <span>🔀</span>
                             <span>Share</span>
                           </a>
                         </div>
 
-                        {/* Step Process Indicator (1 Share -> 2 They sign up -> 3 You earn) */}
-                        <div className="grid grid-cols-3 gap-2 pt-2 border-t border-gray-100">
+                        {/* Step Process Indicator */}
+                        <div className="grid grid-cols-3 gap-2 pt-3 border-t border-[#334155]">
                           <div className="flex flex-col items-center">
-                            <div className="w-7 h-7 rounded-full bg-[#FFFBEB] border border-[#FCD34D] flex items-center justify-center font-black text-xs text-gray-900 mb-1">1</div>
-                            <span className="text-[10px] font-medium text-gray-600">Share your code</span>
+                            <div className="w-7 h-7 rounded-full bg-[#0F172A] border border-[#F3D079] flex items-center justify-center font-black text-xs text-[#F3D079] mb-1">1</div>
+                            <span className="text-[10px] font-medium text-[#94A3B8]">Share your code</span>
                           </div>
                           <div className="flex flex-col items-center">
-                            <div className="w-7 h-7 rounded-full bg-[#FFFBEB] border border-[#FCD34D] flex items-center justify-center font-black text-xs text-gray-900 mb-1">2</div>
-                            <span className="text-[10px] font-medium text-gray-600">They sign up</span>
+                            <div className="w-7 h-7 rounded-full bg-[#0F172A] border border-[#F3D079] flex items-center justify-center font-black text-xs text-[#F3D079] mb-1">2</div>
+                            <span className="text-[10px] font-medium text-[#94A3B8]">They sign up</span>
                           </div>
                           <div className="flex flex-col items-center">
-                            <div className="w-7 h-7 rounded-full bg-[#FFFBEB] border border-[#FCD34D] flex items-center justify-center font-black text-xs text-gray-900 mb-1">3</div>
-                            <span className="text-[10px] font-medium text-gray-600">You earn</span>
+                            <div className="w-7 h-7 rounded-full bg-[#0F172A] border border-[#F3D079] flex items-center justify-center font-black text-xs text-[#F3D079] mb-1">3</div>
+                            <span className="text-[10px] font-medium text-[#94A3B8]">You earn</span>
                           </div>
                         </div>
                       </div>
@@ -2360,13 +2360,13 @@ export default function App() {
               </div>
 
               {/* CARD 3: TOTAL REFERRALS */}
-              <div className="bg-white rounded-2xl shadow-md border border-gray-200 overflow-hidden">
-                <div className="bg-[#141C2E] px-4 py-2.5 flex justify-between items-center text-white">
+              <div className="bg-[#1E293B] rounded-2xl shadow-lg border border-[#334155] overflow-hidden">
+                <div className="bg-[#162238] px-4 py-2.5 flex justify-between items-center text-white">
                   <div className="flex items-center gap-2">
                     <span className="text-sm">👥</span>
                     <span className="text-xs font-black tracking-wider uppercase">TOTAL REFERRALS</span>
                   </div>
-                  <div className="bg-[#FFFBEB] text-gray-900 px-2.5 py-0.5 rounded-full text-xs font-black flex items-center gap-1">
+                  <div className="bg-[#0F172A] border border-[#F3D079] text-[#F3D079] px-2.5 py-0.5 rounded-full text-xs font-black flex items-center gap-1">
                     <span>👤</span>
                     <span>{user?.referralsCount || 0}</span>
                   </div>
@@ -2376,16 +2376,16 @@ export default function App() {
                   {(user?.referralsCount || 0) === 0 ? (
                     <div className="py-4">
                       <div className="text-4xl mb-2">👥</div>
-                      <p className="text-sm font-bold text-gray-500">No referrals yet</p>
+                      <p className="text-sm font-bold text-[#94A3B8]">No referrals yet</p>
                     </div>
                   ) : (
-                    <div className="text-left text-xs space-y-2">
-                      <div className="p-3 bg-gray-50 rounded-xl border border-gray-200 flex justify-between items-center">
+                    <div className="text-left space-y-2">
+                      <div className="p-3 bg-[#0F172A] rounded-xl border border-[#334155] flex justify-between items-center text-xs">
                         <div>
-                          <p className="font-bold text-gray-800">Invited Player</p>
-                          <p className="text-gray-500 text-[10px]">Active User • +₹50 Bonus</p>
+                          <p className="font-bold text-white">Invited Friends Total</p>
+                          <p className="text-[#94A3B8]">Active Referred Players</p>
                         </div>
-                        <span className="font-black text-[#00873E] text-sm">+₹50</span>
+                        <span className="font-mono font-bold text-[#F3D079] text-sm">{user?.referralsCount} Players</span>
                       </div>
                     </div>
                   )}
