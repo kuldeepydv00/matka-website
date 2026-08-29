@@ -62,6 +62,8 @@ export default function App() {
     withdrawable_balance?: number;
     referral_code?: string;
     referralsCount?: number;
+    deposits?: any[];
+    withdrawals?: any[];
   } | null>(null);
 
   // App Data States
@@ -2488,11 +2490,61 @@ export default function App() {
                   </button>
                 </div>
 
-                {/* Empty State or Recent Transactions list */}
-                <div className="bg-[#121927] border border-gray-800 rounded-2xl p-6 text-center">
-                  <div className="text-4xl mb-2">📜</div>
-                  <h5 className="text-sm font-bold text-white mb-1">No recent transactions</h5>
-                  <p className="text-[11px] text-gray-400 leading-relaxed">Your deposits and withdrawals will appear here.</p>
+                <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                  {/* 1. Always show Joining Bonus +₹200.00 */}
+                  <div className="bg-[#0F172A] border border-emerald-500/30 rounded-2xl p-3 flex justify-between items-center shadow-sm">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-lg">
+                        🎁
+                      </div>
+                      <div>
+                        <h5 className="text-xs font-bold text-white">Joining Bonus</h5>
+                        <p className="text-[10px] text-gray-400 font-mono">Welcome Signup Reward</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs font-black font-mono text-[#00C853]">+₹200.00</p>
+                      <span className="text-[9px] px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-400 font-bold uppercase">Credited</span>
+                    </div>
+                  </div>
+
+                  {/* 2. Real user deposits */}
+                  {(user?.deposits || []).map((d: any, i: number) => (
+                    <div key={`dep_${i}`} className="bg-[#0F172A] border border-gray-800 rounded-2xl p-3 flex justify-between items-center">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center text-lg">
+                          💳
+                        </div>
+                        <div>
+                          <h5 className="text-xs font-bold text-white">Deposit ({d.payment_method || 'UPI'})</h5>
+                          <p className="text-[10px] text-gray-400 font-mono">{d.date || 'Today'}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs font-black font-mono text-[#00C853]">+₹{d.amount}.00</p>
+                        <span className="text-[9px] px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-400 font-bold uppercase">{d.status || 'Approved'}</span>
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* 3. Real user withdrawals */}
+                  {(user?.withdrawals || []).map((w: any, i: number) => (
+                    <div key={`wd_${i}`} className="bg-[#0F172A] border border-gray-800 rounded-2xl p-3 flex justify-between items-center">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-red-500/20 text-red-400 flex items-center justify-center text-lg">
+                          🏦
+                        </div>
+                        <div>
+                          <h5 className="text-xs font-bold text-white">Withdrawal</h5>
+                          <p className="text-[10px] text-gray-400 font-mono">{w.date || 'Today'}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs font-black font-mono text-[#EF4444]">-₹{w.amount}.00</p>
+                        <span className="text-[9px] px-2 py-0.5 rounded-full bg-amber-950 text-amber-400 font-bold uppercase">{w.status || 'Pending'}</span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
 
