@@ -239,6 +239,31 @@ export default function App() {
   const [depositAmount, setDepositAmount] = useState('500');
   const [depositUtr, setDepositUtr] = useState('');
   const [depositMessage, setDepositMessage] = useState('');
+  const [activeUpiId, setActiveUpiId] = useState('8930507940@ybl');
+  const [activeMerchantName, setActiveMerchantName] = useState('95X MATKA');
+
+  useEffect(() => {
+    if (showDepositModal) {
+      const fetchActiveUpi = async () => {
+        try {
+          let res = await fetchApi('/api/payment-methods');
+          if (!res.ok) {
+            res = await fetchApi('/api/admin/payment-methods');
+          }
+          if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data) && data.length > 0) {
+              const active = data.find((p: any) => p.status === 'Active') || data[0];
+              const upi = active.upi_id || active.upiId || active.upi;
+              if (upi) setActiveUpiId(upi);
+              if (active.merchant_name) setActiveMerchantName(active.merchant_name);
+            }
+          }
+        } catch (e) {}
+      };
+      fetchActiveUpi();
+    }
+  }, [showDepositModal]);
 
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState('500');
@@ -2302,6 +2327,28 @@ export default function App() {
                     onChange={(e) => setDepositAmount(e.target.value)}
                     className="w-full bg-[#0F172A] border border-[#334155] rounded-xl p-3 text-sm text-white font-mono focus:outline-none"
                   />
+                </div>
+
+                <div className="bg-[#0F172A] border border-[#334155] rounded-xl p-4 text-center my-3">
+                  <p className="text-xs font-bold text-emerald-400 mb-2">Scan QR & Pay ₹{depositAmount || '500'}</p>
+                  <img
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(`upi://pay?pa=${activeUpiId}&pn=${activeMerchantName}&am=${depositAmount || '500'}&cu=INR`)}`}
+                    alt="UPI Payment QR"
+                    className="w-40 h-40 mx-auto rounded-lg bg-white p-2 border border-slate-700 shadow-md"
+                  />
+                  <div className="mt-3 flex items-center justify-center gap-2 text-xs font-mono font-bold text-white bg-slate-800 py-1.5 px-3 rounded-lg border border-slate-700">
+                    <span>UPI ID: {activeUpiId}</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(activeUpiId);
+                        alert(`UPI ID ${activeUpiId} copied!`);
+                      }}
+                      className="text-xs text-indigo-400 hover:text-indigo-300 font-sans ml-1"
+                    >
+                      📋 Copy
+                    </button>
+                  </div>
                 </div>
 
                 <div>
