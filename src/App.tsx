@@ -2349,6 +2349,12 @@ export default function App() {
                       📋 Copy
                     </button>
                   </div>
+                  <a
+                    href={`upi://pay?pa=${activeUpiId}&pn=${encodeURIComponent(activeMerchantName)}&am=${depositAmount || '500'}&cu=INR`}
+                    className="block w-full bg-[#00C853] hover:bg-[#00B248] text-white font-bold text-xs py-2.5 rounded-lg mt-3 text-center transition-all shadow-md"
+                  >
+                    ⚡ Open PhonePe / GPay / Paytm
+                  </a>
                 </div>
 
                 <div>
