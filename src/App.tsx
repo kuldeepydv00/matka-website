@@ -329,7 +329,7 @@ export default function App() {
   const [activeWebTab, setActiveWebTab] = useState<'home' | 'mybets' | 'charts' | 'referral'>('home');
   const [myBetsList, setMyBetsList] = useState<any[]>([]);
 
-  // Load saved session on launch & immediately sync live profile
+  // Load saved session & bets on launch & immediately sync live profile
   useEffect(() => {
     const saved = localStorage.getItem('95x_web_user');
     if (saved) {
@@ -352,6 +352,14 @@ export default function App() {
             })
             .catch(() => {});
         }
+      } catch (e) {}
+    }
+
+    const savedBets = localStorage.getItem('95x_my_bets');
+    if (savedBets) {
+      try {
+        const b = JSON.parse(savedBets);
+        if (Array.isArray(b) && b.length > 0) setMyBetsList(b);
       } catch (e) {}
     }
   }, []);
@@ -402,7 +410,17 @@ export default function App() {
         const bHistoryRes = await fetchApi(`/api/game/my-bets?mobile=${activeMobile}`);
         if (bHistoryRes.ok) {
           const bHistory = await bHistoryRes.json();
-          setMyBetsList(bHistory);
+          if (Array.isArray(bHistory) && bHistory.length > 0) {
+            setMyBetsList(prev => {
+              const combined = [...bHistory];
+              prev.forEach(pb => {
+                const exists = combined.some(cb => String(cb._id || cb.id) === String(pb._id || pb.id));
+                if (!exists) combined.push(pb);
+              });
+              localStorage.setItem('95x_my_bets', JSON.stringify(combined));
+              return combined;
+            });
+          }
         }
 
         // Fetch Referral Stats Live
@@ -613,6 +631,27 @@ export default function App() {
           setUser(updatedUser);
           localStorage.setItem('95x_web_user', JSON.stringify(updatedUser));
         }
+
+        // Store new bets in local list & localStorage so they never disappear
+        const newBetRecords = activeBets.map(b => ({
+          _id: `bet_${Date.now()}_${b.num}`,
+          game_name: selectedGameForBetting || 'Delhi Bazar',
+          bet_type: betCategory.toUpperCase(),
+          number: b.num,
+          bet_amount: b.amt,
+          potential_payout: b.amt * (betCategory.toLowerCase() === 'jodi' ? 95 : 10),
+          win_amount: 0,
+          status: 'PENDING',
+          user: user?.mobile || 'User',
+          created_at: new Date().toISOString()
+        }));
+
+        setMyBetsList(prev => {
+          const updated = [...newBetRecords, ...prev];
+          localStorage.setItem('95x_my_bets', JSON.stringify(updated));
+          return updated;
+        });
+
         setJodiGrid({});
         refreshData();
         setTimeout(() => {
