@@ -406,20 +406,13 @@ export default function App() {
           });
         }
 
-        // Fetch My Bets
+        // Fetch My Bets for active logged-in user
         const bHistoryRes = await fetchApi(`/api/game/my-bets?mobile=${activeMobile}`);
         if (bHistoryRes.ok) {
           const bHistory = await bHistoryRes.json();
-          if (Array.isArray(bHistory) && bHistory.length > 0) {
-            setMyBetsList(prev => {
-              const combined = [...bHistory];
-              prev.forEach(pb => {
-                const exists = combined.some(cb => String(cb._id || cb.id) === String(pb._id || pb.id));
-                if (!exists) combined.push(pb);
-              });
-              localStorage.setItem('95x_my_bets', JSON.stringify(combined));
-              return combined;
-            });
+          if (Array.isArray(bHistory)) {
+            setMyBetsList(bHistory);
+            localStorage.setItem('95x_my_bets', JSON.stringify(bHistory));
           }
         }
 
@@ -1273,7 +1266,9 @@ export default function App() {
                     <button
                       onClick={() => {
                         setUser(null);
+                        setMyBetsList([]);
                         localStorage.removeItem('95x_web_user');
+                        localStorage.removeItem('95x_my_bets');
                         setAuthStep('phone');
                         setMobileNumber('');
                         setOtpInput('');
