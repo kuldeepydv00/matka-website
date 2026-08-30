@@ -1739,6 +1739,7 @@ export default function App() {
                           <div className="bg-[#0F172A] border-2 border-[#F3D079] rounded-2xl py-3.5 px-3">
                             <div className="text-xl font-mono font-black text-[#F3D079] tracking-[0.2em] select-all whitespace-nowrap overflow-x-auto">
                               {userRefCode}
+                            </div>
                           </div>
 
                           {/* Side-by-Side Action Buttons */}
@@ -2967,6 +2968,7 @@ export default function App() {
                         <div className="bg-[#0F172A] border-2 border-[#F3D079] rounded-2xl py-3.5 px-3">
                           <div className="text-xl font-mono font-black text-[#F3D079] tracking-[0.2em] select-all whitespace-nowrap overflow-x-auto">
                             {userRefCode}
+                          </div>
                         </div>
 
                         {/* Side-by-Side Action Buttons */}
