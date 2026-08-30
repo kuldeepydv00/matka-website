@@ -5,7 +5,11 @@ import {
   CheckCircle, MessageCircle, Clock, Trophy, ChevronRight, X, Bell 
 } from 'lucide-react';
 
-const API_BASE_URLS = ['https://matka-r6mz.onrender.com', 'http://localhost:5001'];
+const API_BASE_URLS = [
+  typeof window !== 'undefined' ? (window.location.origin.includes('localhost') ? 'http://localhost:5001' : window.location.origin) : 'https://matka-r6mz.onrender.com',
+  'https://matka-r6mz.onrender.com',
+  'http://localhost:5001'
+];
 
 const fetchApi = async (endpoint: string, options: any = {}) => {
   for (const base of API_BASE_URLS) {
