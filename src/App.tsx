@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Download, UserPlus, Play, Star, ShieldCheck, 
   Smartphone, Wallet, ArrowLeft, RefreshCw, 
-  CheckCircle, MessageCircle, Clock, Trophy, ChevronRight, X 
+  CheckCircle, MessageCircle, Clock, Trophy, ChevronRight, X, Bell 
 } from 'lucide-react';
 
 const API_BASE_URLS = ['https://matka-r6mz.onrender.com', 'http://localhost:5001'];
@@ -127,6 +127,29 @@ export default function App() {
       }
     } catch (e) {}
   };
+
+  const [notificationsList, setNotificationsList] = useState<any[]>([]);
+  const [showNotificationsModal, setShowNotificationsModal] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  const fetchWebsiteNotifications = async () => {
+    try {
+      const res = await fetchApi('/api/notifications');
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setNotificationsList(data);
+          setUnreadCount(data.length);
+        }
+      }
+    } catch (e) {}
+  };
+
+  useEffect(() => {
+    fetchWebsiteNotifications();
+    const interval = setInterval(fetchWebsiteNotifications, 10000);
+    return () => clearInterval(interval);
+  }, []);
 
   const [applyRefInput, setApplyRefInput] = useState('');
   const [applyRefStatus, setApplyRefStatus] = useState('');
@@ -1332,14 +1355,33 @@ export default function App() {
                 <h3 className="text-sm font-black text-white tracking-wider">95X MATKA</h3>
               </div>
 
-              {/* Wallet Balance Box */}
-              <button 
-                onClick={() => setShowWalletModal(true)}
-                className="flex items-center gap-1.5 bg-[#00C853] text-white px-3 py-1.5 rounded-xl text-xs font-bold font-mono shadow-md hover:bg-[#00B248]"
-              >
-                <span>💵</span>
-                <span>• ₹{user?.balance ? user.balance.toFixed(2) : '0.00'}</span>
-              </button>
+              <div className="flex items-center gap-2">
+                {/* Notification Bell Button */}
+                <button
+                  onClick={() => {
+                    setShowNotificationsModal(true);
+                    setUnreadCount(0);
+                  }}
+                  className="relative p-2 rounded-xl bg-[#1E293B] border border-gray-700 text-gray-200 hover:text-white transition-all active:scale-95"
+                  title="Push Notifications"
+                >
+                  <Bell className="w-4 h-4 text-amber-400" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center animate-bounce">
+                      {unreadCount}
+                    </span>
+                  )}
+                </button>
+
+                {/* Wallet Balance Box */}
+                <button 
+                  onClick={() => setShowWalletModal(true)}
+                  className="flex items-center gap-1.5 bg-[#00C853] text-white px-3 py-1.5 rounded-xl text-xs font-bold font-mono shadow-md hover:bg-[#00B248]"
+                >
+                  <span>💵</span>
+                  <span>• ₹{user?.balance ? user.balance.toFixed(2) : '0.00'}</span>
+                </button>
+              </div>
             </div>
 
             {/* Contact Support Pill Button (Matching Android App Image 1!) */}
@@ -2375,6 +2417,46 @@ export default function App() {
                   SUBMIT DEPOSIT REQUEST ➔
                 </button>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL: PUSH NOTIFICATIONS DRAWER */}
+        {showNotificationsModal && (
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-[#1E293B] border border-[#334155] rounded-2xl w-full max-w-sm p-5 shadow-2xl relative max-h-[80vh] flex flex-col">
+              <button 
+                onClick={() => setShowNotificationsModal(false)}
+                className="absolute top-4 right-4 text-gray-400 hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <h3 className="text-base font-bold text-white mb-1 flex items-center gap-2">
+                <Bell className="w-5 h-5 text-amber-400" /> Notifications & Alerts
+              </h3>
+              <p className="text-xs text-gray-400 mb-4">Latest game results and broadcast announcements.</p>
+
+              <div className="flex-1 overflow-y-auto space-y-3 pr-1">
+                {notificationsList.length === 0 ? (
+                  <div className="text-center py-8 text-xs text-gray-400">
+                    <p className="text-2xl mb-1">🔔</p>
+                    No notifications yet. Result announcements & admin updates will appear here!
+                  </div>
+                ) : (
+                  notificationsList.map((n, i) => (
+                    <div key={i} className="bg-[#0F172A] border border-[#334155] rounded-xl p-3.5 space-y-1">
+                      <div className="flex justify-between items-start gap-2">
+                        <h4 className="text-xs font-bold text-amber-400">{n.title}</h4>
+                        <span className="text-[10px] text-gray-500 font-mono whitespace-nowrap">
+                          {n.createdAt ? new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now'}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-200 leading-relaxed">{n.body}</p>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
           </div>
         )}
