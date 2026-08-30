@@ -1731,7 +1731,7 @@ export default function App() {
                   <div className="p-4 text-center">
                     {(() => {
                       const userRefCode = referralDetails.referral_code || user?.referral_code || (user?.mobile ? `REF${user.mobile.slice(-10)}` : 'REF1472580369');
-                      const shareText = `Play 95X Matka & Win 95X! 👑\nUse my Referral Code: ${userRefCode} to get bonus balance!\nPlay online: https://matka-website.vercel.app`;
+                      const shareText = `Play 95X Matka & Win 95X! 👑\nUse my Referral Code: ${userRefCode} to get bonus balance!\nPlay online: ${window.location.origin}`;
                       const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
 
                       return (
@@ -1743,7 +1743,7 @@ export default function App() {
                           </div>
 
                           <div className="text-xs font-semibold text-[#94A3B8]">
-                            https://matka-website.vercel.app/
+                            {window.location.origin}/
                           </div>
 
                           {/* Side-by-Side Action Buttons */}
@@ -2964,7 +2964,7 @@ export default function App() {
                 <div className="p-4 text-center">
                   {(() => {
                     const userRefCode = referralDetails.referral_code || user?.referral_code || (user?.mobile ? `REF${user.mobile.slice(-10)}` : 'REF1472580369');
-                    const shareText = `Play 95X Matka & Win 95X! 👑\nUse my Referral Code: ${userRefCode} to get bonus balance!\nPlay online: https://matka-website.vercel.app`;
+                    const shareText = `Play 95X Matka & Win 95X! 👑\nUse my Referral Code: ${userRefCode} to get bonus balance!\nPlay online: ${window.location.origin}`;
                     const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
 
                     return (
@@ -2976,7 +2976,7 @@ export default function App() {
                         </div>
 
                         <div className="text-xs font-semibold text-[#94A3B8]">
-                          https://matka-website.vercel.app/
+                          {window.location.origin}/
                         </div>
 
                         {/* Side-by-Side Action Buttons */}
