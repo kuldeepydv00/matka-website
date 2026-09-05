@@ -72,7 +72,10 @@ export default function App() {
 
   // App Data States
   const [declaredResults, setDeclaredResults] = useState<Record<string, number>>({});
+  const [gameSchedules, setGameSchedules] = useState<Record<string, GameSchedule>>(DEFAULT_SCHEDULES);
   const [bannerConfig, setBannerConfig] = useState<any>(null);
+  const [whatsappNumber, setWhatsappNumber] = useState('917027709695');
+  const [whatsappCallNumber, setWhatsappCallNumber] = useState('917027709695');
 
   // WebApp Modal & Bidding States
   const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
@@ -225,14 +228,25 @@ export default function App() {
       if (ampm === 'PM' && h < 12) h += 12;
       if (ampm === 'AM' && h === 12) h = 0;
 
+      const cleanOpen = sched.open.replace('IST', '').trim();
+      const oParts = cleanOpen.split(' ');
+      const oTimeParts = oParts[0].split(':');
+      let oh = parseInt(oTimeParts[0]);
+      const om = parseInt(oTimeParts[1]);
+      const oAmpm = oParts[1];
+
+      if (oAmpm === 'PM' && oh < 12) oh += 12;
+      if (oAmpm === 'AM' && oh === 12) oh = 0;
+      
+      const openMins = oh * 60 + om;
       const closeMins = h * 60 + m;
 
-      if (gameName === 'Desawar') {
-        if (currentMins >= 4 * 60 && currentMins < 5 * 60) return false;
-        return true;
+      // Desawar often crosses midnight (e.g. Open 10:00 AM, Close 04:00 AM)
+      if (closeMins < openMins || gameName === 'Desawar') {
+        return currentMins >= openMins || currentMins < closeMins;
       }
 
-      return currentMins < closeMins;
+      return currentMins >= openMins && currentMins < closeMins;
     } catch (e) {
       return true;
     }
@@ -263,7 +277,7 @@ export default function App() {
   }, [chartFilter, selectedChartDate]);
 
   const [showDepositModal, setShowDepositModal] = useState(false);
-  const [depositAmount, setDepositAmount] = useState('500');
+  const [depositAmount, setDepositAmount] = useState('300');
   const [depositUtr, setDepositUtr] = useState('');
   const [depositMessage, setDepositMessage] = useState('');
   const [activeUpiId, setActiveUpiId] = useState('8930507940@ybl');
@@ -293,7 +307,7 @@ export default function App() {
   }, [showDepositModal]);
 
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
-  const [withdrawAmount, setWithdrawAmount] = useState('500');
+  const [withdrawAmount, setWithdrawAmount] = useState('300');
   const [withdrawMethod, setWithdrawMethod] = useState<'UPI' | 'Bank'>('UPI');
   const [withdrawUpi, setWithdrawUpi] = useState('');
   const [withdrawHolderName, setWithdrawHolderName] = useState('');
@@ -308,7 +322,7 @@ export default function App() {
     const numAmt = parseFloat(withdrawAmount);
 
     if (!numAmt || numAmt < 500) {
-      setWithdrawMessage('Error: Minimum withdrawal amount is ₹500');
+      setWithdrawMessage('Error: Minimum withdrawal amount is ₹300');
       return;
     }
 
@@ -409,12 +423,15 @@ export default function App() {
       } catch (e) {}
     }
 
-    const savedBets = localStorage.getItem('95x_my_bets');
-    if (savedBets) {
-      try {
-        const b = JSON.parse(savedBets);
-        if (Array.isArray(b) && b.length > 0) setMyBetsList(b);
-      } catch (e) {}
+    const savedMob = saved ? JSON.parse(saved)?.mobile : null;
+    if (savedMob) {
+      const savedBets = localStorage.getItem(`95x_my_bets_${savedMob}`);
+      if (savedBets) {
+        try {
+          const b = JSON.parse(savedBets);
+          if (Array.isArray(b) && b.length > 0) setMyBetsList(b);
+        } catch (e) {}
+      }
     }
   }, []);
 
@@ -428,11 +445,32 @@ export default function App() {
         setBannerConfig(bData);
       }
 
-      // Fetch Results
+            // Fetch Results
       const rRes = await fetchApi('/api/game/results');
       if (rRes.ok) {
         const rData = await rRes.json();
         setDeclaredResults(rData);
+      }
+
+      // Fetch Schedules
+      const sRes = await fetchApi('/api/admin/schedules');
+      if (sRes.ok) {
+        const sData = await sRes.json();
+        if (Object.keys(sData).length > 0) {
+          setGameSchedules(sData);
+        }
+      }
+
+      // Fetch Settings (WhatsApp number, etc.)
+      const setRes = await fetchApi('/api/app/settings');
+      if (setRes.ok) {
+        const setData = await setRes.json();
+        if (setData.whatsapp_number) {
+          setWhatsappNumber(setData.whatsapp_number.replace(/[^0-9]/g, ''));
+        }
+        if (setData.whatsapp_call_number) {
+          setWhatsappCallNumber(setData.whatsapp_call_number.replace(/[^0-9]/g, ''));
+        }
       }
 
       // Refresh User Wallet & Profile Name from Backend live!
@@ -466,7 +504,7 @@ export default function App() {
           const bHistory = await bHistoryRes.json();
           if (Array.isArray(bHistory)) {
             setMyBetsList(bHistory);
-            localStorage.setItem('95x_my_bets', JSON.stringify(bHistory));
+            localStorage.setItem(`95x_my_bets_${activeMobile}`, JSON.stringify(bHistory));
           }
         }
 
@@ -663,7 +701,7 @@ export default function App() {
         body: JSON.stringify({
           game_name: selectedGameForBetting,
           bet_type: betCategory.toUpperCase(),
-          bets: activeBets.map(b => ({ number: b.num, bet_amount: b.amt })),
+          bets: activeBets.map(b => ({ number: b.num, bet_amount: b.amt, bet_type: b.type || betCategory.toUpperCase() })),
           mobile: user.mobile,
           userPhone: user.mobile
         })
@@ -683,7 +721,7 @@ export default function App() {
         const newBetRecords = activeBets.map(b => ({
           _id: `bet_${Date.now()}_${b.num}`,
           game_name: selectedGameForBetting || 'Delhi Bazar',
-          bet_type: betCategory.toUpperCase(),
+          bet_type: b.type || betCategory.toUpperCase(),
           number: b.num,
           bet_amount: b.amt,
           potential_payout: b.amt * (betCategory.toLowerCase() === 'jodi' ? 95 : 10),
@@ -695,7 +733,9 @@ export default function App() {
 
         setMyBetsList(prev => {
           const updated = [...newBetRecords, ...prev];
-          localStorage.setItem('95x_my_bets', JSON.stringify(updated));
+          if (user?.mobile) {
+            localStorage.setItem(`95x_my_bets_${user.mobile}`, JSON.stringify(updated));
+          }
           return updated;
         });
 
@@ -1051,10 +1091,10 @@ export default function App() {
                 <h4 className="text-sm font-bold text-gray-900">Customer Support:</h4>
                 <div className="text-xs text-gray-700 space-y-1.5">
                   <p className="flex items-center gap-2">
-                    <span>📞</span> Contact: <a href="tel:917027709695" className="text-blue-600 font-bold underline">917027709695</a>
+                    <span>📞</span> Contact: <a href={`tel:${whatsappCallNumber || whatsappNumber}`} className="text-blue-600 font-bold underline">{whatsappCallNumber || whatsappNumber}</a>
                   </p>
                   <p className="flex items-center gap-2">
-                    <span>💬</span> WhatsApp: <a href="https://wa.me/917027709695" target="_blank" rel="noreferrer" className="text-blue-600 font-bold underline">917027709695</a>
+                    <span>💬</span> WhatsApp: <a href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noreferrer" className="text-blue-600 font-bold underline">{whatsappNumber}</a>
                   </p>
                 </div>
               </div>
@@ -1298,7 +1338,7 @@ export default function App() {
                     </button>
 
                     <a
-                      href="https://wa.me/917027709695"
+                      href={`https://wa.me/${whatsappNumber}`}
                       target="_blank"
                       rel="noreferrer"
                       onClick={() => setIsSideMenuOpen(false)}
@@ -1391,7 +1431,7 @@ export default function App() {
             {/* Contact Support Pill Button (Matching Android App Image 1!) */}
             <div className="p-4">
               <a 
-                href="https://wa.me/917027709695" 
+                href={`https://wa.me/${whatsappNumber}`} 
                 target="_blank" 
                 rel="noreferrer"
                 className="w-full bg-[#00C853] hover:bg-[#00B248] text-white font-bold py-3 px-4 rounded-full flex justify-between items-center shadow-lg transition-all"
@@ -1416,7 +1456,7 @@ export default function App() {
                     <p className="text-xs text-gray-300">❖ आपका भरोसा, हमारी पहचान ❖</p>
                     <div className="flex justify-around items-center bg-gray-900/80 p-2 rounded-xl text-[10px] font-bold text-[#F3D079] mt-3 border border-yellow-500/20">
                       <span>⚡ MIN DEPOSIT: ₹{bannerConfig?.minDeposit || 100}</span>
-                      <span>🏦 MIN WITHDRAWAL: ₹{bannerConfig?.minWithdrawal || 500}</span>
+                      <span>🏦 MIN WITHDRAWAL: ₹{bannerConfig?.minWithdrawal || 300}</span>
                     </div>
                   </div>
                 )}
@@ -1431,19 +1471,19 @@ export default function App() {
                   <h3 className="text-base font-bold text-white mb-2">Results</h3>
 
                   <div className="space-y-3">
-                    {Object.keys(DEFAULT_SCHEDULES).filter((gameName) => {
-                      return !isGameBettingOpen(gameName, DEFAULT_SCHEDULES[gameName]);
+                    {Object.keys(gameSchedules).filter((gameName) => {
+                      return !isGameBettingOpen(gameName, gameSchedules[gameName]);
                     }).length === 0 ? (
                       <div className="text-center py-5 bg-[#121927] rounded-2xl border border-gray-800 text-gray-400 text-xs font-semibold">
                         No closed results yet for today. Live games open below!
                       </div>
                     ) : (
-                      Object.keys(DEFAULT_SCHEDULES).filter((gameName) => {
-                        return !isGameBettingOpen(gameName, DEFAULT_SCHEDULES[gameName]);
+                      Object.keys(gameSchedules).filter((gameName) => {
+                        return !isGameBettingOpen(gameName, gameSchedules[gameName]);
                       }).map((gameName) => {
                         const result = declaredResults[gameName] ?? declaredResults[gameName === 'Desawar' ? 'Disawer' : (gameName === 'Shree Ganesh' ? 'Shri Ganesh' : gameName)];
                         const isDeclared = (result !== undefined && result !== null);
-                        const sched = DEFAULT_SCHEDULES[gameName];
+                        const sched = gameSchedules[gameName];
 
                         // Custom emblems matching Android app image!
                         const iconEmoji = 
@@ -1505,17 +1545,17 @@ export default function App() {
                   <h3 className="text-base font-bold text-white mb-2">Live Games</h3>
 
                   <div className="space-y-3">
-                    {Object.keys(DEFAULT_SCHEDULES).filter((gameName) => {
-                      return isGameBettingOpen(gameName, DEFAULT_SCHEDULES[gameName]);
+                    {Object.keys(gameSchedules).filter((gameName) => {
+                      return isGameBettingOpen(gameName, gameSchedules[gameName]);
                     }).length === 0 ? (
                       <div className="text-center py-6 bg-[#121927] rounded-2xl border border-gray-800 text-gray-400 text-xs font-semibold">
                         No games currently open for betting. Check results above!
                       </div>
                     ) : (
-                      Object.keys(DEFAULT_SCHEDULES).filter((gameName) => {
-                        return isGameBettingOpen(gameName, DEFAULT_SCHEDULES[gameName]);
+                      Object.keys(gameSchedules).filter((gameName) => {
+                        return isGameBettingOpen(gameName, gameSchedules[gameName]);
                       }).map((gameName) => {
-                        const sched = DEFAULT_SCHEDULES[gameName];
+                        const sched = gameSchedules[gameName];
 
                         return (
                           <div 
@@ -1565,27 +1605,42 @@ export default function App() {
             {activeWebTab === 'mybets' && (
               <div className="px-4 space-y-3">
                 <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-2">My Bet History</h3>
-                {myBetsList.length === 0 ? (
-                  <div className="text-center text-gray-400 py-12 bg-[#121927] rounded-2xl border border-gray-800">
-                    <p className="text-sm">No bets placed yet.</p>
-                  </div>
-                ) : (
-                  myBetsList.map((bet, idx) => (
+                {(() => {
+                  const uniqueBets = myBetsList.filter((bet, index, self) => 
+                    index === self.findIndex((b) => (
+                      (b._id && bet._id && b._id === bet._id) ||
+                      (b.id && bet.id && b.id === bet.id) ||
+                      (b.game_name === bet.game_name && b.number === bet.number && Math.abs(b.bet_amount - bet.bet_amount) < 0.01 &&
+                       Math.abs(new Date(b.created_at || 0).getTime() - new Date(bet.created_at || 0).getTime()) < 30000)
+                    ))
+                  );
+                  if (uniqueBets.length === 0) {
+                    return (
+                      <div className="text-center text-gray-400 py-12 bg-[#121927] rounded-2xl border border-gray-800">
+                        <p className="text-sm">No bets placed yet.</p>
+                      </div>
+                    );
+                  }
+                  return uniqueBets.map((bet, idx) => {
+                    const bType = (bet.bet_type || '').toUpperCase();
+                    const isHar = bType.includes('HAR') || bType.includes('ANDER') || bType.includes('BAHAR');
+                    const displayNum = isHar ? String(bet.number) : (String(bet.number) === '0' || String(bet.number) === '100' ? '00' : String(bet.number).padStart(2, '0'));
+                    return (
                     <div key={idx} className="bg-[#121927] p-3.5 rounded-xl border border-gray-800 flex justify-between items-center shadow-md">
                       <div>
-                        <span className="text-xs font-bold text-[#FFE485]">{bet.game_name} ({bet.bet_type})</span>
-                        <p className="text-xs text-white font-mono mt-0.5">Number: <span className="font-bold text-[#00C853]">{bet.number}</span> | Amount: ₹{bet.bet_amount}</p>
+                        <span className="text-xs font-bold text-[#FFE485]">{bet.game_name} ({bet.bet_type || 'JODI'})</span>
+                        <p className="text-xs text-white font-mono mt-0.5">Number: <span className="font-bold text-[#00C853]">{displayNum}</span> | Amount: ₹{bet.bet_amount}</p>
                       </div>
                       <span className={`text-[10px] font-bold px-2.5 py-1 rounded-lg uppercase ${
-                        bet.status === 'won' ? 'bg-green-500/20 text-green-400 border border-green-500/40' :
-                        bet.status === 'lost' ? 'bg-red-500/20 text-red-400 border border-red-500/40' :
+                        (bet.status || '').toLowerCase() === 'won' ? 'bg-green-500/20 text-green-400 border border-green-500/40' :
+                        (bet.status || '').toLowerCase() === 'lost' ? 'bg-red-500/20 text-red-400 border border-red-500/40' :
                         'bg-amber-500/20 text-amber-400 border border-amber-500/40'
                       }`}>
-                        {bet.status}
+                        {bet.status || 'PENDING'}
                       </span>
                     </div>
-                  ))
-                )}
+                  );});
+                })()}
               </div>
             )}
 
@@ -1649,7 +1704,7 @@ export default function App() {
 
                 {/* Market Result Cards List */}
                 <div className="space-y-3">
-                  {Object.keys(DEFAULT_SCHEDULES).map((gameName) => {
+                  {Object.keys(gameSchedules).map((gameName) => {
                     // Fetch live result for requested date from MongoDB & Backend API
                     const result = dateChartResults[gameName] !== undefined 
                       ? dateChartResults[gameName] 
@@ -1814,7 +1869,7 @@ export default function App() {
                       <div className="py-4">
                         <div className="text-4xl mb-2">👥</div>
                         <p className="text-sm font-bold text-[#94A3B8]">No referrals yet</p>
-                        <p className="text-[11px] text-[#64748B] mt-1">Share your code above to start earning bonus & lifetime 4% bet commissions!</p>
+                        <p className="text-[11px] text-[#64748B] mt-1">Share your code above to start earning lifetime 4% bet commissions!</p>
                       </div>
                     ) : (
                       <div className="text-left space-y-2.5">
@@ -1824,7 +1879,7 @@ export default function App() {
                               <p className="font-bold text-white text-sm">{ref.name}</p>
                               <p className="text-[#94A3B8] font-mono text-[11px] mt-0.5">{ref.mobile} • {ref.date}</p>
                               <p className="text-[11px] text-[#F3D079] font-semibold mt-1">
-                                Bonus: ₹{ref.bonus} • 4% Bet Comm: ₹{ref.betCommission.toFixed(2)}
+                                4% Bet Comm: ₹{ref.betCommission.toFixed(2)}
                               </p>
                             </div>
                             <div className="text-right">
@@ -1881,7 +1936,7 @@ export default function App() {
               </button>
 
               <a 
-                href="https://wa.me/917027709695" 
+                href={`https://wa.me/${whatsappNumber}`} 
                 target="_blank" 
                 rel="noreferrer"
                 className="flex flex-col items-center gap-1 text-[10px] font-black uppercase tracking-wider text-gray-400 hover:text-gray-200 transition-all"
@@ -2316,7 +2371,7 @@ export default function App() {
               </button>
 
               <a 
-                href="https://wa.me/917027709695" 
+                href={`https://wa.me/${whatsappNumber}`} 
                 target="_blank" 
                 rel="noreferrer"
                 className="flex flex-col items-center gap-1 text-[10px] font-black uppercase tracking-wider text-gray-400 hover:text-gray-200 transition-all"
@@ -2515,7 +2570,7 @@ export default function App() {
 
                 <div className="bg-[#0F172A] p-3 rounded-2xl border border-gray-800 text-[11px] space-y-1 text-gray-300">
                   <p>⚡ <strong className="text-white">Min Deposit:</strong> ₹100</p>
-                  <p>🏦 <strong className="text-white">Min Withdrawal:</strong> ₹500</p>
+                  <p>🏦 <strong className="text-white">Min Withdrawal:</strong> ₹300</p>
                   <p>🎲 <strong className="text-white">Min Bet:</strong> ₹10</p>
                 </div>
               </div>
@@ -3035,7 +3090,7 @@ export default function App() {
                     <div className="py-4">
                       <div className="text-4xl mb-2">👥</div>
                       <p className="text-sm font-bold text-[#94A3B8]">No referrals yet</p>
-                      <p className="text-[11px] text-[#64748B] mt-1">Share your code above to start earning bonus & lifetime 4% bet commissions!</p>
+                      <p className="text-[11px] text-[#64748B] mt-1">Share your code above to start earning lifetime 4% bet commissions!</p>
                     </div>
                   ) : (
                     <div className="text-left space-y-2.5">
@@ -3045,7 +3100,7 @@ export default function App() {
                             <p className="font-bold text-white text-sm">{ref.name}</p>
                             <p className="text-[#94A3B8] font-mono text-[11px] mt-0.5">{ref.mobile} • {ref.date}</p>
                             <p className="text-[11px] text-[#F3D079] font-semibold mt-1">
-                              Bonus: ₹{ref.bonus} • 4% Bet Comm: ₹{ref.betCommission.toFixed(2)}
+                              4% Bet Comm: ₹{ref.betCommission.toFixed(2)}
                             </p>
                           </div>
                           <div className="text-right">
