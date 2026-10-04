@@ -6,21 +6,29 @@ import {
 } from 'lucide-react';
 import { parseCopyPasteText, ParsedBetItem } from './utils/copyPasteParser';
 
-const API_BASE_URLS = [
-  typeof window !== 'undefined' ? (window.location.origin.includes('localhost') ? 'http://localhost:5001' : window.location.origin) : 'https://95xmatka.com',
-  'https://95xmatka.online',
-  'https://95xmatka.com',
-  'http://localhost:5001'
-];
+const IS_LOCAL_DEV = typeof window !== 'undefined' && window.location.origin.includes('localhost');
+const API_BASE_URLS = IS_LOCAL_DEV
+  ? ['http://localhost:5001']
+  : [
+      typeof window !== 'undefined' ? window.location.origin : 'https://95xmatka.com',
+      'https://95xmatka.com',
+      'https://95xmatka.online'
+    ].filter((u, i, a) => a.indexOf(u) === i);
 
+// Use the backup server ONLY when the main one cannot be reached at all.
+// An HTTP error (400/401/404/500) is a real answer from the server, so it is returned
+// as-is instead of repeating the same request on every server (slow, and for POSTs
+// such as placing a bet it could repeat the action).
 const fetchApi = async (endpoint: string, options: any = {}) => {
+  let lastError: any = null;
   for (const base of API_BASE_URLS) {
     try {
-      const res = await fetch(`${base}${endpoint}`, options);
-      if (res.ok) return res;
-    } catch (e) {}
+      return await fetch(`${base}${endpoint}`, options);
+    } catch (e) {
+      lastError = e;
+    }
   }
-  return fetch(`${API_BASE_URLS[0]}${endpoint}`, options);
+  throw lastError || new Error('Network error');
 };
 
 interface GameSchedule {
@@ -498,7 +506,7 @@ export default function App() {
 
   useEffect(() => {
     fetchWebsiteNotifications();
-    const interval = setInterval(fetchWebsiteNotifications, 10000);
+    const interval = setInterval(() => { if (!document.hidden) fetchWebsiteNotifications(); }, 30000);
     return () => clearInterval(interval);
   }, []);
 
@@ -682,7 +690,7 @@ export default function App() {
     };
 
     fetchBanners();
-    const interval = setInterval(fetchBanners, 8000);
+    const interval = setInterval(() => { if (!document.hidden) fetchBanners(); }, 30000);
     return () => clearInterval(interval);
   }, []);
 
@@ -704,31 +712,7 @@ export default function App() {
   const [ekqrOrderData, setEkqrOrderData] = useState<any>(null);
   const [isCheckingEkqrStatus, setIsCheckingEkqrStatus] = useState(false);
   const [ekqrStatusText, setEkqrStatusText] = useState('');
-  const [activeUpiId, setActiveUpiId] = useState('8930507940@ybl');
-  const [activeMerchantName, setActiveMerchantName] = useState('95X MATKA');
-
-  useEffect(() => {
-    if (showDepositModal) {
-      const fetchActiveUpi = async () => {
-        try {
-          let res = await fetchApi('/api/payment-methods');
-          if (!res.ok) {
-            res = await fetchApi('/api/admin/payment-methods');
-          }
-          if (res.ok) {
-            const data = await res.json();
-            if (Array.isArray(data) && data.length > 0) {
-              const active = data.find((p: any) => p.status === 'Active') || data[0];
-              const upi = active.upi_id || active.upiId || active.upi;
-              if (upi) setActiveUpiId(upi);
-              if (active.merchant_name) setActiveMerchantName(active.merchant_name);
-            }
-          }
-        } catch (e) {}
-      };
-      fetchActiveUpi();
-    }
-  }, [showDepositModal]);
+  // Deposits are EKQR-only: the QR always comes from the EKQR order (paid into the EKQR account).
 
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState('200');
@@ -1003,10 +987,26 @@ export default function App() {
     } catch (e) {}
   };
 
+  // Auto-refresh every 10s; never overlapping; paused while the page is in the background
   useEffect(() => {
-    refreshData();
-    const timer = setInterval(refreshData, 3000);
-    return () => clearInterval(timer);
+    let busy = false;
+    const tick = async () => {
+      if (document.hidden || busy) return;
+      busy = true;
+      try {
+        await refreshData();
+      } finally {
+        busy = false;
+      }
+    };
+    tick();
+    const timer = setInterval(tick, 10000);
+    const onVisible = () => { if (!document.hidden) tick(); };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
   }, [user?.mobile]);
 
   // Resend OTP countdown timer
@@ -4223,16 +4223,33 @@ export default function App() {
                       <span>Waiting for UPI payment... Auto-syncing</span>
                     </div>
 
-                    {/* Universal QR Code */}
+                    {/* QR from the EKQR order ONLY (money goes to the EKQR account) */}
                     {(() => {
                       const intent = ekqrOrderData.upi_intent || {};
-                      const universalUpiData = (intent.bhim_link && intent.bhim_link.startsWith('upi://'))
-                        ? intent.bhim_link
-                        : (ekqrOrderData.payment_url && ekqrOrderData.payment_url.startsWith('upi://'))
-                        ? ekqrOrderData.payment_url
-                        : (intent.phonepe_link && intent.phonepe_link.startsWith('upi://'))
-                        ? intent.phonepe_link
-                        : `upi://pay?pa=8930507940@ybl&pn=95XMATKA&am=${depositAmount}&cu=INR`;
+                      const isUpi = (v: any) => typeof v === 'string' && v.startsWith('upi://');
+                      const universalUpiData = isUpi(intent.bhim_link) ? intent.bhim_link
+                        : isUpi(ekqrOrderData.payment_url) ? ekqrOrderData.payment_url
+                        : isUpi(intent.phonepe_link) ? intent.phonepe_link
+                        : isUpi(intent.gpay_link) ? intent.gpay_link
+                        : isUpi(intent.paytm_link) ? intent.paytm_link
+                        : '';
+                      const hostedPage = typeof ekqrOrderData.payment_url === 'string' && ekqrOrderData.payment_url.startsWith('https://')
+                        ? ekqrOrderData.payment_url : '';
+
+                      if (!universalUpiData) {
+                        return hostedPage ? (
+                          <a
+                            href={hostedPage}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="block w-full bg-[#00C853] hover:bg-[#00B248] text-white font-black py-3 rounded-xl text-xs uppercase tracking-wider"
+                          >
+                            Open Secure Payment Page ➔
+                          </a>
+                        ) : (
+                          <p className="text-xs font-bold text-red-300">Payment link not available. Please tap "Cancel / Change Amount" and try again.</p>
+                        );
+                      }
 
                       return (
                         <>
